@@ -1,14 +1,9 @@
-# --- Python Specific ---
+# === Python ===
 __pycache__/
 *.py[cod]
 *$py.class
-
-# --- Environment & Dependencies ---
-.env
-.venv/
-venv/
-env/
-ENV/
+*.so
+.Python
 build/
 develop-eggs/
 dist/
@@ -24,24 +19,81 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
 
-# --- Your Requested Files/Folders ---
-.antigravity
-.cluade
+# === Virtual Environments ===
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
 
-# --- Databases & Data Files ---
-# Ignore local SQLite databases and common data formats often used in DE
+# === IDE & Editors ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.project
+.pydevproject
+.sublime-project
+.sublime-workspace
+
+# === Environment & Secrets ===
+.env
+.env.local
+.env.*.local
+.env.example.local
+
+# === Data & Databases ===
+data/raw_bronze/*
+data/processed_silver/*
+!data/raw_bronze/.gitkeep
+!data/processed_silver/.gitkeep
 *.db
 *.sqlite
 *.sqlite3
-*.csv
-*.parquet
-*.json
-*.xlsx
-data/
+*.duckdb
+*.duckdb.wal
 
-# --- IDE & OS Specific ---
-.vscode/
-.idea/
+# === Logs ===
+logs/
+*.log
+
+# === Testing & Coverage ===
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+# === Jupyter ===
+.ipynb_checkpoints/
+*.ipynb
+
+# === Build & Distribution ===
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# === macOS ===
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# === Windows ===
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Project-Specific ===
+profile_report.json
+.antigravity
+.cluade

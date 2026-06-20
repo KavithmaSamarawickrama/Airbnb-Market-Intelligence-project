@@ -1,0 +1,18 @@
+# AWS CDK Requirements
+
+# Core CDK libraries
+aws-cdk-lib==2.99.1
+constructs==10.3.0
+
+# Python standard AWS CDK modules
+aws-cdk.aws-ec2==2.99.1
+aws-cdk.aws-s3==2.99.1
+aws-cdk.aws-iam==2.99.1
+aws-cdk.aws-logs==2.99.1
+aws-cdk.aws-events==2.99.1
+aws-cdk.aws-events-targets==2.99.1
+aws-cdk.aws-lambda==2.99.1
+
+# Utilities
+boto3==1.28.35
+botocore==1.31.35

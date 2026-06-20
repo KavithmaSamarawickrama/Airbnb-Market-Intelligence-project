@@ -1,0 +1,30 @@
+# Inside Airbnb Cities Configuration
+# Add a city by adding 4 lines: city name, and URLs for listings, calendar, and reviews
+# Re-running the pipeline automatically detects new cities and ingests them
+
+cities:
+  - name: london
+    country: "United Kingdom"
+    listings_url: "http://insideairbnb.com/documents/gb/london/2024-12-02/visualisations/listings.csv"
+    calendar_url: "http://insideairbnb.com/documents/gb/london/2024-12-02/visualisations/calendar.csv"
+    reviews_url: "http://insideairbnb.com/documents/gb/london/2024-12-02/reviews.csv.gz"
+    description: "Greater London, capital of England"
+
+  - name: paris
+    country: "France"
+    listings_url: "http://insideairbnb.com/documents/fr/paris/2024-12-02/visualisations/listings.csv"
+    calendar_url: "http://insideairbnb.com/documents/fr/paris/2024-12-02/visualisations/calendar.csv"
+    reviews_url: "http://insideairbnb.com/documents/fr/paris/2024-12-02/reviews.csv.gz"
+    description: "Paris, France"
+
+  - name: new_york_city
+    country: "USA"
+    listings_url: "http://insideairbnb.com/documents/us/ny/new%20york%20city/2024-12-02/visualisations/listings.csv"
+    calendar_url: "http://insideairbnb.com/documents/us/ny/new%20york%20city/2024-12-02/visualisations/calendar.csv"
+    reviews_url: "http://insideairbnb.com/documents/us/ny/new%20york%20city/2024-12-02/reviews.csv.gz"
+    description: "New York City, USA"
+
+# Quick-start: set enabled: true/false to selectively ingest
+enabled_cities:
+  - london
+  - paris

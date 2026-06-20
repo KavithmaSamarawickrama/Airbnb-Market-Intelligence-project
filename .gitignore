@@ -1,0 +1,47 @@
+# --- Python Specific ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Environment & Dependencies ---
+.env
+.venv/
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- Your Requested Files/Folders ---
+.antigravity
+.cluade
+
+# --- Databases & Data Files ---
+# Ignore local SQLite databases and common data formats often used in DE
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+*.parquet
+*.json
+*.xlsx
+data/
+
+# --- IDE & OS Specific ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

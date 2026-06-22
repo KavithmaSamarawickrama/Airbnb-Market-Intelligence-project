@@ -197,9 +197,9 @@ class IngestionEngine:
 
         # Ingest listings, calendar, reviews
         file_specs = [
-            ("listings.csv", city_config["listings_url"]),
-            ("calendar.csv", city_config["calendar_url"]),
-            ("reviews.csv.gz", city_config["reviews_url"]),
+            ("listings.csv", city_config["listings_csv"]),
+            ("calendar.csv", city_config["calendar_gz"]),
+            ("reviews.csv.gz", city_config["reviews_gz"]),
         ]
 
         for filename, url in file_specs:

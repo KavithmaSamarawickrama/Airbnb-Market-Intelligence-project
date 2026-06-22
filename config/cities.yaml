@@ -1,30 +1,79 @@
-# Inside Airbnb Cities Configuration
-# Add a city by adding 4 lines: city name, and URLs for listings, calendar, and reviews
-# Re-running the pipeline automatically detects new cities and ingests them
-
 cities:
   - name: london
     country: "United Kingdom"
-    listings_url: "http://insideairbnb.com/documents/gb/london/2024-12-02/visualisations/listings.csv"
-    calendar_url: "http://insideairbnb.com/documents/gb/london/2024-12-02/visualisations/calendar.csv"
-    reviews_url: "http://insideairbnb.com/documents/gb/london/2024-12-02/reviews.csv.gz"
-    description: "Greater London, capital of England"
+    listings_gz: "http://insideairbnb.com/documents/gb/london/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/gb/london/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/gb/london/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/gb/london/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/gb/london/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/gb/london/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/gb/london/2026-03-15/visualisations/neighbourhoods.geojson"
 
-  - name: paris
-    country: "France"
-    listings_url: "http://insideairbnb.com/documents/fr/paris/2024-12-02/visualisations/listings.csv"
-    calendar_url: "http://insideairbnb.com/documents/fr/paris/2024-12-02/visualisations/calendar.csv"
-    reviews_url: "http://insideairbnb.com/documents/fr/paris/2024-12-02/reviews.csv.gz"
-    description: "Paris, France"
+  - name: madrid
+    country: "Spain"
+    listings_gz: "http://insideairbnb.com/documents/es/madrid/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/es/madrid/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/es/madrid/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/es/madrid/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/es/madrid/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/es/madrid/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/es/madrid/2026-03-15/visualisations/neighbourhoods.geojson"
 
-  - name: new_york_city
-    country: "USA"
-    listings_url: "http://insideairbnb.com/documents/us/ny/new%20york%20city/2024-12-02/visualisations/listings.csv"
-    calendar_url: "http://insideairbnb.com/documents/us/ny/new%20york%20city/2024-12-02/visualisations/calendar.csv"
-    reviews_url: "http://insideairbnb.com/documents/us/ny/new%20york%20city/2024-12-02/reviews.csv.gz"
-    description: "New York City, USA"
+  - name: rome
+    country: "Italy"
+    listings_gz: "http://insideairbnb.com/documents/it/rome/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/it/rome/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/it/rome/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/it/rome/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/it/rome/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/it/rome/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/it/rome/2026-03-15/visualisations/neighbourhoods.geojson"
 
-# Quick-start: set enabled: true/false to selectively ingest
+  - name: brussels
+    country: "Belgium"
+    listings_gz: "http://insideairbnb.com/documents/be/brussels/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/be/brussels/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/be/brussels/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/be/brussels/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/be/brussels/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/be/brussels/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/be/brussels/2026-03-15/visualisations/neighbourhoods.geojson"
+
+  - name: berlin
+    country: "Germany"
+    listings_gz: "http://insideairbnb.com/documents/de/berlin/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/de/berlin/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/de/berlin/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/de/berlin/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/de/berlin/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/de/berlin/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/de/berlin/2026-03-15/visualisations/neighbourhoods.geojson"
+
+  - name: amsterdam
+    country: "Netherlands"
+    listings_gz: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/nl/amsterdam/2026-03-15/visualisations/neighbourhoods.geojson"
+
+  - name: vienna
+    country: "Austria"
+    listings_gz: "http://insideairbnb.com/documents/at/vienna/2026-03-15/data/listings.csv.gz"
+    listings_csv: "http://insideairbnb.com/documents/at/vienna/2026-03-15/visualisations/listings.csv"
+    calendar_gz: "http://insideairbnb.com/documents/at/vienna/2026-03-15/data/calendar.csv.gz"
+    reviews_gz: "http://insideairbnb.com/documents/at/vienna/2026-03-15/data/reviews.csv.gz"
+    reviews_csv: "http://insideairbnb.com/documents/at/vienna/2026-03-15/visualisations/reviews.csv"
+    neighbourhoods_csv: "http://insideairbnb.com/documents/at/vienna/2026-03-15/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "http://insideairbnb.com/documents/at/vienna/2026-03-15/visualisations/neighbourhoods.geojson"
+
 enabled_cities:
   - london
-  - paris
+  - madrid
+  - rome
+  - brussels
+  - berlin
+  - amsterdam
+  - vienna

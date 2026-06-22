@@ -5,12 +5,12 @@ aws:
   region: "us-east-1"
   # For local development, use default credentials from ~/.aws/credentials or env vars
   # For EC2 deployment, use IAM role (no explicit credentials needed)
-  profile: null  # Set to a profile name if needed; null uses default
+  profile: "default" # Set to a profile name if needed; null uses default
 
 # S3 Bucket Configuration
 s3:
-  bronze_bucket: "airbnb-intel-bronze-{{ account_id }}"
-  silver_bucket: "airbnb-intel-silver-{{ account_id }}"
+  bronze_bucket: "airbnb-intel-bronze-245758552387"
+  silver_bucket: "airbnb-intel-silver-245758552387"
   bronze_prefix: "raw_bronze/"
   silver_prefix: "processed_silver/"
   # Default ACL: private (no public access)
@@ -20,11 +20,11 @@ s3:
 
 # Supabase Configuration (PostgreSQL Serving Layer)
 supabase:
-  host: "{{ SUPABASE_HOST }}"  # From .env (e.g., "xxxxx.supabase.co")
-  port: 5432
+  host: "aws-1-ap-southeast-2.pooler.supabase.com"  # From .env (e.g., "xxxxx.supabase.co")
+  port: 6543
   database: "postgres"
-  user: "postgres"
-  password: "{{ SUPABASE_PASSWORD }}"  # From .env
+  user: "postgres.dbrijqmxmfxyyqrabbln"
+  password: "mkjsdjujhturh"  # From .env
   pool_size: 5
   # Tables will be created/replaced during build_gold.py
 

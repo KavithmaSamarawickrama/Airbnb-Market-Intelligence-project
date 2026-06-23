@@ -88,8 +88,8 @@ class GoldLayerBuilder:
                 full_date,
                 YEAR(full_date) as year,
                 MONTH(full_date) as month,
-                DAY_OF_WEEK(full_date) as day_of_week,
-                (DAY_OF_WEEK(full_date) IN (6, 7)) as is_weekend,
+                isodow(full_date) as day_of_week,
+                (isodow(full_date) IN (6, 7)) as is_weekend,
                 CASE
                     WHEN MONTH(full_date) IN (12, 1, 2) THEN 'Winter'
                     WHEN MONTH(full_date) IN (3, 4, 5) THEN 'Spring'
@@ -118,6 +118,7 @@ class GoldLayerBuilder:
         """Build dim_listings from Silver listings_clean."""
         try:
             logger.info(f"Building dim_listings for {city}...")
+            city_clean = city.replace('-', '_')
 
             # Read from Silver Parquet
             listings_path = Path("./data/processed_silver") / f"{city}_listings_clean.parquet"
@@ -126,7 +127,7 @@ class GoldLayerBuilder:
                 return False
 
             query = f"""
-            CREATE OR REPLACE TABLE dim_listings_{city} AS
+            CREATE OR REPLACE TABLE dim_listings_{city_clean} AS
             SELECT
                 ROW_NUMBER() OVER (ORDER BY listing_id) as listing_key,
                 listing_id,
@@ -143,8 +144,8 @@ class GoldLayerBuilder:
             """
 
             self.duck.execute(query)
-            row_count = self.duck.execute(f"SELECT COUNT(*) FROM dim_listings_{city}").fetchone()[0]
-            logger.info(f"Created dim_listings_{city} with {row_count} rows")
+            row_count = self.duck.execute(f"SELECT COUNT(*) FROM dim_listings_{city_clean}").fetchone()[0]
+            logger.info(f"Created dim_listings_{city_clean} with {row_count} rows")
             self.summary["dimensions"] += 1
             return True
 
@@ -157,6 +158,7 @@ class GoldLayerBuilder:
         """Build dim_hosts from Silver listings_clean."""
         try:
             logger.info(f"Building dim_hosts for {city}...")
+            city_clean = city.replace('-', '_')
 
             listings_path = Path("./data/processed_silver") / f"{city}_listings_clean.parquet"
             if not listings_path.exists():
@@ -164,7 +166,7 @@ class GoldLayerBuilder:
                 return False
 
             query = f"""
-            CREATE OR REPLACE TABLE dim_hosts_{city} AS
+            CREATE OR REPLACE TABLE dim_hosts_{city_clean} AS
             SELECT
                 ROW_NUMBER() OVER (ORDER BY host_id) as host_key,
                 host_id,
@@ -186,8 +188,8 @@ class GoldLayerBuilder:
             """
 
             self.duck.execute(query)
-            row_count = self.duck.execute(f"SELECT COUNT(*) FROM dim_hosts_{city}").fetchone()[0]
-            logger.info(f"Created dim_hosts_{city} with {row_count} rows")
+            row_count = self.duck.execute(f"SELECT COUNT(*) FROM dim_hosts_{city_clean}").fetchone()[0]
+            logger.info(f"Created dim_hosts_{city_clean} with {row_count} rows")
             self.summary["dimensions"] += 1
             return True
 
@@ -200,6 +202,7 @@ class GoldLayerBuilder:
         """Build dim_neighbourhoods from Silver listings_clean."""
         try:
             logger.info(f"Building dim_neighbourhoods for {city}...")
+            city_clean = city.replace('-', '_')
 
             listings_path = Path("./data/processed_silver") / f"{city}_listings_clean.parquet"
             if not listings_path.exists():
@@ -207,7 +210,7 @@ class GoldLayerBuilder:
                 return False
 
             query = f"""
-            CREATE OR REPLACE TABLE dim_neighbourhoods_{city} AS
+            CREATE OR REPLACE TABLE dim_neighbourhoods_{city_clean} AS
             SELECT
                 ROW_NUMBER() OVER (ORDER BY neighbourhood) as neighbourhood_key,
                 neighbourhood,
@@ -228,8 +231,8 @@ class GoldLayerBuilder:
             """
 
             self.duck.execute(query)
-            row_count = self.duck.execute(f"SELECT COUNT(*) FROM dim_neighbourhoods_{city}").fetchone()[0]
-            logger.info(f"Created dim_neighbourhoods_{city} with {row_count} rows")
+            row_count = self.duck.execute(f"SELECT COUNT(*) FROM dim_neighbourhoods_{city_clean}").fetchone()[0]
+            logger.info(f"Created dim_neighbourhoods_{city_clean} with {row_count} rows")
             self.summary["dimensions"] += 1
             return True
 
@@ -247,6 +250,7 @@ class GoldLayerBuilder:
         """
         try:
             logger.info(f"Building fact_listings_daily_snapshot for {city}...")
+            city_clean = city.replace('-', '_')
 
             calendar_path = Path("./data/processed_silver") / f"{city}_calendar_clean.parquet"
             listings_path = Path("./data/processed_silver") / f"{city}_listings_clean.parquet"
@@ -258,7 +262,7 @@ class GoldLayerBuilder:
 
             # Complex join with dimension tables
             query = f"""
-            CREATE OR REPLACE TABLE fact_listings_daily_{city} AS
+            CREATE OR REPLACE TABLE fact_listings_daily_{city_clean} AS
             SELECT
                 ROW_NUMBER() OVER (ORDER BY dl.listing_key, dc.date_key) as fact_id,
                 dl.listing_key,
@@ -273,11 +277,11 @@ class GoldLayerBuilder:
             FROM read_parquet('{calendar_path}') as cal
             LEFT JOIN read_parquet('{listings_path}') as lst
                 ON cal.listing_id = lst.listing_id
-            LEFT JOIN dim_listings_{city} dl
+            LEFT JOIN dim_listings_{city_clean} dl
                 ON lst.listing_id = dl.listing_id
-            LEFT JOIN dim_hosts_{city} dh
+            LEFT JOIN dim_hosts_{city_clean} dh
                 ON lst.host_id = dh.host_id
-            LEFT JOIN dim_neighbourhoods_{city} dn
+            LEFT JOIN dim_neighbourhoods_{city_clean} dn
                 ON lst.neighbourhood = dn.neighbourhood
             LEFT JOIN dim_calendar_dates dc
                 ON CAST(cal.calendar_date AS DATE) = dc.full_date
@@ -291,8 +295,8 @@ class GoldLayerBuilder:
             """
 
             self.duck.execute(query)
-            row_count = self.duck.execute(f"SELECT COUNT(*) FROM fact_listings_daily_{city}").fetchone()[0]
-            logger.info(f"Created fact_listings_daily_{city} with {row_count} rows")
+            row_count = self.duck.execute(f"SELECT COUNT(*) FROM fact_listings_daily_{city_clean}").fetchone()[0]
+            logger.info(f"Created fact_listings_daily_{city_clean} with {row_count} rows")
             self.summary["fact"] += 1
             return True
 
@@ -391,7 +395,14 @@ def run(settings_path: str = "./config/settings.yaml", cities: Optional[List[str
         Summary dict
     """
     if cities is None:
-        cities = ["london", "paris"]
+        try:
+            config_path = Path(settings_path).parent / "cities.yaml"
+            with open(config_path) as f:
+                cities_config = yaml.safe_load(f)
+            cities = cities_config.get("enabled_cities", [])
+        except Exception as e:
+            logger.warning(f"Could not load cities.yaml, defaulting to london, paris: {e}")
+            cities = ["london", "paris"]
 
     builder = GoldLayerBuilder(settings_path)
     return builder.run(cities)

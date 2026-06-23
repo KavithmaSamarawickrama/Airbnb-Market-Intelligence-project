@@ -40,9 +40,10 @@ class DataQualityProfiler:
         """
         try:
             logger.info(f"Profiling {table_name}...")
+            table_path = table_path.replace('\\', '/')
 
             # Get schema
-            schema_query = f"DESCRIBE read_parquet('{table_path}')"
+            schema_query = f"DESCRIBE SELECT * FROM read_parquet('{table_path}')"
             schema = self.conn.execute(schema_query).fetchall()
 
             profile = {
@@ -58,7 +59,7 @@ class DataQualityProfiler:
             profile["total_rows"] = row_count
 
             # Profile each column
-            for col_name, col_type in schema:
+            for col_name, col_type, *rest in schema:
                 col_profile = {
                     "name": col_name,
                     "type": col_type,
@@ -186,7 +187,14 @@ def run(settings_path: str = "./config/settings.yaml", cities: Optional[List[str
         Profiling report dict
     """
     if cities is None:
-        cities = ["london", "paris"]
+        try:
+            config_path = Path(settings_path).parent / "cities.yaml"
+            with open(config_path) as f:
+                cities_config = yaml.safe_load(f)
+            cities = cities_config.get("enabled_cities", [])
+        except Exception as e:
+            logger.warning(f"Could not load cities.yaml, defaulting to london, paris: {e}")
+            cities = ["london", "paris"]
 
     profiler = DataQualityProfiler(settings_path)
     try:

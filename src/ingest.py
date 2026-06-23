@@ -195,11 +195,15 @@ class IngestionEngine:
         manifest_entries = []
         city_summary = {"downloaded": 0, "skipped": 0, "failed": 0, "retried": 0}
 
-        # Ingest listings, calendar, reviews
+        # Ingest all 7 files per city according to the links in cities.yaml
         file_specs = [
+            ("listings.csv.gz", city_config["listings_gz"]),
             ("listings.csv", city_config["listings_csv"]),
-            ("calendar.csv", city_config["calendar_gz"]),
+            ("calendar.csv.gz", city_config["calendar_gz"]),
             ("reviews.csv.gz", city_config["reviews_gz"]),
+            ("reviews.csv", city_config["reviews_csv"]),
+            ("neighbourhoods.csv", city_config["neighbourhoods_csv"]),
+            ("neighbourhoods.geojson", city_config["neighbourhoods_geojson"]),
         ]
 
         for filename, url in file_specs:
@@ -300,3 +304,5 @@ if __name__ == "__main__":
     setup_logging(Path("./logs"), level="INFO", format_type="json")
     result = run(dry_run=False)
     sys.exit(0 if result["failed"] == 0 else 1)
+
+    

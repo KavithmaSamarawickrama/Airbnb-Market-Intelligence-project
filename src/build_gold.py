@@ -319,6 +319,7 @@ class GoldLayerBuilder:
 
             # Drop table if exists (idempotent)
             cur.execute(f"DROP TABLE IF EXISTS {table_name} CASCADE")
+            conn.commit()
 
             # Export from DuckDB as Parquet in memory, then bulk insert
             # For simplicity, we'll use DuckDB's postgres_scanner extension
@@ -330,17 +331,29 @@ class GoldLayerBuilder:
                 f"{self.settings['supabase']['database']}"
             )
 
-            # Attach Postgres database in DuckDB
-            self.duck.execute(f"ATTACH 'dbname=postgres user=postgres' AS postgres_db")
+            # Detach if already attached from a previous run or city
+            try:
+                self.duck.execute("DETACH postgres_db")
+            except Exception:
+                pass
 
-            # Insert data
+            # Attach Postgres database in DuckDB using the DSN
+            self.duck.execute(f"ATTACH '{pg_dsn}' AS postgres_db (TYPE POSTGRES)")
+
+            # Create and Insert data
             insert_query = f"""
-            INSERT INTO postgres_db.public.{table_name}
+            CREATE TABLE postgres_db.public.{table_name} AS
             SELECT * FROM {duckdb_table}
             """
 
             self.duck.execute(insert_query)
             logger.info(f"Loaded {duckdb_table} to {table_name}")
+
+            # Detach after loading to clean up connection
+            try:
+                self.duck.execute("DETACH postgres_db")
+            except Exception:
+                pass
 
             return True
 
@@ -363,12 +376,114 @@ class GoldLayerBuilder:
             self.build_dim_calendar()
 
             # Build dimensions and facts per city
+            city_cleans = []
             for city in cities:
                 logger.info(f"Processing {city}...")
                 self.build_dim_listings(city)
                 self.build_dim_hosts(city)
                 self.build_dim_neighbourhoods(city)
                 self.build_fact_listings_daily(city)
+                city_cleans.append(city.replace('-', '_'))
+
+            if city_cleans:
+                logger.info("Unioning and conforming multi-city Gold layers...")
+                
+                # 1. Conformed Listings Dimension
+                union_listings = " UNION ALL ".join([f"SELECT * FROM dim_listings_{c}" for c in city_cleans])
+                self.duck.execute(f"""
+                    CREATE OR REPLACE TABLE dim_listings AS
+                    SELECT 
+                        ROW_NUMBER() OVER (ORDER BY listing_id) as listing_key,
+                        listing_id, name, room_type, property_type, accommodates, bedrooms, beds, latitude, longitude
+                    FROM (
+                        SELECT *, ROW_NUMBER() OVER (PARTITION BY listing_id ORDER BY listing_key) as rn
+                        FROM ({union_listings})
+                    ) WHERE rn = 1
+                """)
+                
+                # 2. Conformed Hosts Dimension
+                union_hosts = " UNION ALL ".join([f"SELECT * FROM dim_hosts_{c}" for c in city_cleans])
+                self.duck.execute(f"""
+                    CREATE OR REPLACE TABLE dim_hosts AS
+                    SELECT 
+                        ROW_NUMBER() OVER (ORDER BY host_id) as host_key,
+                        host_id, host_name, is_superhost, host_since, host_listings_count
+                    FROM (
+                        SELECT *, ROW_NUMBER() OVER (PARTITION BY host_id ORDER BY host_key) as rn
+                        FROM ({union_hosts})
+                    ) WHERE rn = 1
+                """)
+                
+                # 3. Conformed Neighbourhoods Dimension
+                union_neighs = " UNION ALL ".join([f"SELECT * FROM dim_neighbourhoods_{c}" for c in city_cleans])
+                self.duck.execute(f"""
+                    CREATE OR REPLACE TABLE dim_neighbourhoods AS
+                    SELECT 
+                        ROW_NUMBER() OVER (ORDER BY neighbourhood) as neighbourhood_key,
+                        neighbourhood, neighbourhood_group, centroid_lat, centroid_lon
+                    FROM (
+                        SELECT *, ROW_NUMBER() OVER (PARTITION BY neighbourhood, neighbourhood_group ORDER BY neighbourhood_key) as rn
+                        FROM ({union_neighs})
+                    ) WHERE rn = 1
+                """)
+
+                # 4. Conformed Fact Table (mapping back to conformed dimensions)
+                fact_queries = []
+                for c in city_cleans:
+                    fact_queries.append(f"""
+                        SELECT
+                            f.fact_id,
+                            new_dl.listing_key,
+                            new_dh.host_key,
+                            new_dn.neighbourhood_key,
+                            f.date_key,
+                            f.price,
+                            f.is_available,
+                            f.minimum_nights,
+                            f.est_revenue,
+                            f.reviews_to_date
+                        FROM fact_listings_daily_{c} f
+                        JOIN dim_listings_{c} old_dl ON f.listing_key = old_dl.listing_key
+                        JOIN dim_listings new_dl ON old_dl.listing_id = new_dl.listing_id
+                        
+                        JOIN dim_hosts_{c} old_dh ON f.host_key = old_dh.host_key
+                        JOIN dim_hosts new_dh ON old_dh.host_id = new_dh.host_id
+                        
+                        JOIN dim_neighbourhoods_{c} old_dn ON f.neighbourhood_key = old_dn.neighbourhood_key
+                        JOIN dim_neighbourhoods new_dn 
+                            ON old_dn.neighbourhood = new_dn.neighbourhood 
+                            AND COALESCE(old_dn.neighbourhood_group, '') = COALESCE(new_dn.neighbourhood_group, '')
+                    """)
+                
+                union_facts = " UNION ALL ".join(fact_queries)
+                self.duck.execute(f"""
+                    CREATE OR REPLACE TABLE fact_listings_daily_snapshot AS
+                    SELECT 
+                        ROW_NUMBER() OVER () as fact_id,
+                        listing_key, host_key, neighbourhood_key, date_key,
+                        price, is_available, minimum_nights, est_revenue, reviews_to_date
+                    FROM ({union_facts})
+                """)
+
+                # Upload conformed tables to Supabase
+                logger.info("Uploading conformed tables to Supabase...")
+                self.load_to_supabase("all", "dim_calendar_dates", "dim_calendar_dates")
+                self.load_to_supabase("all", "dim_listings", "dim_listings")
+                self.load_to_supabase("all", "dim_hosts", "dim_hosts")
+                self.load_to_supabase("all", "dim_neighbourhoods", "dim_neighbourhoods")
+                self.load_to_supabase("all", "fact_listings_daily_snapshot", "fact_listings_daily_snapshot")
+                
+                # Run analytics view scripts to create views in Supabase
+                try:
+                    conn = self._get_pg_conn()
+                    cur = conn.cursor()
+                    with open("sql/30_analytics.sql") as f:
+                        views_sql = f.read()
+                    cur.execute(views_sql)
+                    conn.commit()
+                    logger.info("Successfully created analytics views on Supabase")
+                except Exception as e:
+                    logger.error(f"Failed to create analytics views on Supabase: {e}")
 
             logger.info(f"Gold layer build complete. Summary: {self.summary}")
             return self.summary

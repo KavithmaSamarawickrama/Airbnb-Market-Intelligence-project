@@ -1,0 +1,79 @@
+=== AIRBNB PRICE PREDICTION CHAMPION MODEL SUMMARY ===
+Trained on: 2026-06-24 15:43:38
+Model Type: LightGBM
+Hyperparameters: {
+  "n_estimators": 700,
+  "learning_rate": 0.04,
+  "max_depth": -1,
+  "num_leaves": 48,
+  "subsample": 0.8,
+  "colsample_bytree": 0.8,
+  "reg_lambda": 2.0,
+  "min_child_samples": 30,
+  "objective": "regression",
+  "metric": "rmse"
+}
+Features used (55 total):
+  - accommodates
+  - bedrooms
+  - beds
+  - latitude
+  - longitude
+  - is_superhost
+  - host_listings_count
+  - avg_price
+  - availability_rate
+  - est_revenue
+  - total_reviews
+  - host_tenure_days
+  - kw_luxury
+  - kw_cozy
+  - kw_apartment
+  - kw_studio
+  - kw_downtown
+  - kw_central
+  - kw_beach
+  - kw_sea
+  - kw_ocean
+  - kw_view
+  - kw_modern
+  - kw_spacious
+  - kw_loft
+  - kw_penthouse
+  - kw_villa
+  - kw_pool
+  - kw_garden
+  - kw_city_center
+  - kw_old_town
+  - kw_new
+  - kw_renovated
+  - kw_balcony
+  - kw_terrace
+  - name_len_chars
+  - name_len_words
+  - name_kw_count
+  - dist_centroid_haversine
+  - dist_centroid_euclidean
+  - beds_per_bedroom
+  - accommodates_per_bed
+  - accommodates_per_bedroom
+  - beds_per_accommodate
+  - host_tenure_years
+  - host_listings_log1p
+  - revenue_per_review
+  - revenue_per_available_day
+  - reviews_per_year_proxy
+  - room_type_freq
+  - property_type_freq
+  - neighbourhood_freq
+  - neighbourhood_group_freq
+  - neighbourhood_group_room_type_freq
+  - property_room_type_freq
+
+=== PERFORMANCE METRICS ON FULL DATASET ===
+Mean Absolute Error (MAE): $5.93
+Root Mean Squared Error (RMSE): $75.62
+R-squared Score (R2): 0.9799
+
+Autoresearch Cross-Validation MAE: $0.00
+Autoresearch Cross-Validation R2: 1.0000

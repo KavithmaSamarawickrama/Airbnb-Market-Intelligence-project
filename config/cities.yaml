@@ -1,0 +1,74 @@
+cities:
+  - name: bergamo
+    country: "Italy"
+    listings_gz: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/italy/lombardia/bergamo/2025-09-29/visualisations/neighbourhoods.geojson"
+
+  - name: copenhagen
+    country: "Denmark"
+    listings_gz: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/denmark/hovedstaden/copenhagen/2025-09-29/visualisations/neighbourhoods.geojson"
+
+  - name: denver
+    country: "United States"
+    listings_gz: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/united-states/co/denver/2025-09-29/visualisations/neighbourhoods.geojson"
+
+  - name: euskadi
+    country: "Spain"
+    listings_gz: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/spain/pv/euskadi/2025-09-29/visualisations/neighbourhoods.geojson"
+
+  - name: istanbul
+    country: "Turkey"
+    listings_gz: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/turkey/marmara/istanbul/2025-09-29/visualisations/neighbourhoods.geojson"
+
+  - name: new-brunswick
+    country: "Canada"
+    listings_gz: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/canada/nb/new-brunswick/2025-09-29/visualisations/neighbourhoods.geojson"
+
+  - name: oslo
+    country: "Norway"
+    listings_gz: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/data/listings.csv.gz"
+    listings_csv: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/visualisations/listings.csv"
+    calendar_gz: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/data/calendar.csv.gz"
+    reviews_gz: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/data/reviews.csv.gz"
+    reviews_csv: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/visualisations/reviews.csv"
+    neighbourhoods_csv: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/visualisations/neighbourhoods.csv"
+    neighbourhoods_geojson: "https://data.insideairbnb.com/norway/oslo/oslo/2025-09-29/visualisations/neighbourhoods.geojson"
+
+enabled_cities:
+  - bergamo
+  - denver

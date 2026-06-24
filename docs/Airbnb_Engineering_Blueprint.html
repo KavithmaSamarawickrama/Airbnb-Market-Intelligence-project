@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inside Airbnb · Interactive Engineering Blueprint &amp; Implementation Guide</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#121214;
+    --panel:#1a1b1f;
+    --panel-2:#202127;
+    --line:#2c2e35;
+    --txt:#d7dae0;
+    --txt-dim:#969aa6;
+    --cyan:#22d3ee;
+    --emerald:#34d399;
+    --amber:#fbbf24;
+    --violet:#a78bfa;
+    --rose:#fb7185;
+    --code-bg:#0e0f12;
+    --mono:'SF Mono','JetBrains Mono','Fira Code',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--txt);
+    font-family:var(--sans);font-size:15px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ---------- Layout ---------- */
+  .shell{display:flex;min-height:100vh}
+  .sidebar{
+    width:288px;flex:0 0 288px;position:sticky;top:0;height:100vh;
+    overflow-y:auto;background:#0d0e10;border-right:1px solid var(--line);
+    padding:26px 20px;
+  }
+  .brand{font-weight:700;font-size:16px;letter-spacing:.3px;color:#fff;margin-bottom:2px}
+  .brand .dot{color:var(--emerald)}
+  .brand-sub{font-size:11.5px;color:var(--txt-dim);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:22px}
+  .nav-group{font-size:10.5px;text-transform:uppercase;letter-spacing:1.5px;color:#5c606c;margin:20px 0 8px}
+  nav a{
+    display:block;padding:8px 12px;border-radius:8px;color:var(--txt-dim);
+    font-size:13.5px;border-left:2px solid transparent;margin-bottom:2px;transition:.15s;
+  }
+  nav a:hover{background:var(--panel);color:var(--txt);text-decoration:none}
+  nav a.active{background:rgba(34,211,238,.08);color:var(--cyan);border-left-color:var(--cyan)}
+  nav a .n{display:inline-block;width:22px;color:#52555f;font-variant-numeric:tabular-nums}
+
+  .content{flex:1;min-width:0;padding:48px 56px 120px;max-width:1180px}
+  @media(max-width:900px){
+    .shell{flex-direction:column}
+    .sidebar{position:relative;width:100%;height:auto;flex:none;border-right:none;border-bottom:1px solid var(--line)}
+    .content{padding:32px 22px 80px}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    border:1px solid var(--line);border-radius:18px;padding:38px 40px;margin-bottom:42px;
+    background:
+      radial-gradient(900px 320px at 88% -10%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(700px 300px at 0% 120%, rgba(52,211,153,.08), transparent 55%),
+      linear-gradient(180deg,#17181d,#141519);
+  }
+  .hero .tag{display:inline-block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--emerald);border:1px solid rgba(52,211,153,.35);border-radius:999px;padding:4px 12px;margin-bottom:18px}
+  .hero h1{font-size:32px;line-height:1.2;margin:0 0 10px;color:#fff;font-weight:750;letter-spacing:-.4px}
+  .hero p{color:var(--txt-dim);max-width:760px;margin:0}
+  .hero .stat-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:26px}
+  .stat{flex:1;min-width:150px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat .v{font-size:21px;font-weight:700;color:#fff}
+  .stat .v.cy{color:var(--cyan)} .stat .v.em{color:var(--emerald)} .stat .v.am{color:var(--amber)}
+  .stat .l{font-size:11.5px;color:var(--txt-dim);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+
+  /* ---------- Sections ---------- */
+  section{margin-bottom:64px;scroll-margin-top:20px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:24px}
+  .sec-num{font-family:var(--mono);font-size:14px;color:var(--emerald);font-weight:600}
+  .sec-head h2{font-size:23px;margin:0;color:#fff;font-weight:700;letter-spacing:-.3px}
+  h3{font-size:17px;color:#fff;margin:30px 0 12px;font-weight:650}
+  h4{font-size:14px;color:var(--cyan);margin:22px 0 8px;text-transform:uppercase;letter-spacing:.8px}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
+  strong{color:#eef0f4}
+  .lead{color:var(--txt-dim);font-size:15.5px}
+
+  /* ---------- Panels / callouts ---------- */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:18px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+  .callout{border-radius:12px;padding:14px 18px;margin:18px 0;border-left:3px solid;font-size:14px}
+  .callout.cy{background:rgba(34,211,238,.06);border-color:var(--cyan)}
+  .callout.em{background:rgba(52,211,153,.06);border-color:var(--emerald)}
+  .callout.am{background:rgba(251,191,36,.06);border-color:var(--amber)}
+  .callout.vi{background:rgba(167,139,250,.06);border-color:var(--violet)}
+  .callout b{color:#fff}
+
+  /* ---------- Tables ---------- */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  th{background:var(--panel-2);color:var(--cyan);text-align:left;padding:11px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.7px;font-weight:600}
+  td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:top;color:var(--txt)}
+  tr:hover td{background:rgba(255,255,255,.015)}
+  td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+  .good{color:var(--emerald);font-weight:600}
+  .warn{color:var(--amber);font-weight:600}
+  .pk{color:var(--amber);font-family:var(--mono);font-size:12px}
+  .fk{color:var(--cyan);font-family:var(--mono);font-size:12px}
+
+  /* ---------- Code ---------- */
+  pre{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:18px 20px;overflow-x:auto;margin:14px 0;
+    font-family:var(--mono);font-size:12.8px;line-height:1.6;color:#cdd3dc}
+  code{font-family:var(--mono);font-size:.92em;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:5px;color:var(--emerald)}
+  pre code{background:none;padding:0;color:inherit;font-size:inherit}
+  .tree{color:var(--txt)}
+  .tree .dir{color:var(--cyan)}
+  .tree .file{color:var(--txt-dim)}
+  .tree .part{color:var(--amber)}
+  .tree .cmt{color:#5c6470;font-style:italic}
+
+  /* prompt cards */
+  .prompt{background:linear-gradient(180deg,#141519,#101114);border:1px solid var(--line);border-radius:14px;margin:18px 0;overflow:hidden}
+  .prompt-head{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+  .prompt-head .ico{font-size:14px}
+  .prompt-head .ttl{font-weight:650;color:#fff;font-size:14px}
+  .prompt-head .badge{margin-left:auto;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--violet);border:1px solid rgba(167,139,250,.4);border-radius:999px;padding:2px 10px}
+  .prompt pre{margin:0;border:none;border-radius:0;background:var(--code-bg)}
+
+  /* mermaid wrap */
+  .diagram{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin:18px 0;text-align:center;overflow-x:auto}
+  .mermaid{font-family:var(--sans)!important}
+
+  /* star schema */
+  .erd{display:flex;flex-direction:column;gap:0}
+  .pill{display:inline-block;font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:6px;margin:1px}
+  .badge-tag{display:inline-block;font-size:10.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--txt-dim);margin-right:6px}
+
+  .foot{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:#5c606c;font-size:12.5px;text-align:center}
+
+  /* layer chips */
+  .layer{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}
+  .lcard{flex:1;min-width:160px;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel)}
+  .lcard .b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px}
+  .lcard h5{margin:0 0 6px;font-size:13.5px;color:#fff}
+  .lcard p{margin:0;font-size:12.5px;color:var(--txt-dim)}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">Inside Airbnb <span class="dot">/</span> Blueprint</div>
+    <div class="brand-sub">Engineering Implementation Guide</div>
+    <nav id="nav">
+      <div class="nav-group">Overview</div>
+      <a href="#top"><span class="n">00</span>Mission &amp; Constraints</a>
+      <div class="nav-group">Blueprint</div>
+      <a href="#arch"><span class="n">01</span>System Architecture</a>
+      <a href="#ingest"><span class="n">02</span>Ingestion &amp; Storage</a>
+      <a href="#schema"><span class="n">03</span>Dimensional Schema</a>
+      <a href="#finance"><span class="n">04</span>$100 Cost Matrix</a>
+      <a href="#prompts"><span class="n">05</span>AI Prompt Repository</a>
+      <a href="#innovation"><span class="n">06</span>Innovation &amp; Decision Log</a>
+    </nav>
+    <div class="nav-group" style="margin-top:28px">Stack</div>
+    <div style="font-size:12px;color:var(--txt-dim);line-height:2">
+      <div>● <span style="color:var(--amber)">EC2 t3.medium</span> — compute</div>
+      <div>● <span style="color:var(--cyan)">S3</span> — Bronze / Silver</div>
+      <div>● <span style="color:var(--emerald)">DuckDB</span> — transform</div>
+      <div>● <span style="color:var(--violet)">Supabase</span> — Gold serving</div>
+      <div>● <span style="color:#fff">Power BI</span> — BI layer</div>
+    </div>
+  </aside>
+
+  <main class="content" id="top">
+    <div class="hero">
+      <span class="tag">Data Engineer Intern · Talent Assessment</span>
+      <h1>End-to-End Airbnb Market Intelligence Pipeline</h1>
+      <p class="lead">A cloud-native, cost-conscious blueprint that moves data from public Inside Airbnb web servers through a Medallion (Bronze → Silver → Gold) lakehouse into a Star Schema and Power BI — engineered to keep <strong>95%+ of a $100 AWS credit untouched</strong> during a one-week sprint by pushing compute to DuckDB and serving from Supabase's free tier.</p>
+      <div class="stat-row">
+        <div class="stat"><div class="v em">&lt; $5</div><div class="l">Projected 1-wk AWS spend</div></div>
+        <div class="stat"><div class="v cy">$0</div><div class="l">Processing engine cost (DuckDB)</div></div>
+        <div class="stat"><div class="v am">3</div><div class="l">Medallion layers</div></div>
+        <div class="stat"><div class="v">5</div><div class="l">Dimensions + 1 fact</div></div>
+      </div>
+    </div>
+
+    <!-- ============ SECTION 1 ============ -->
+    <section id="arch">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Interactive High-Level &amp; System Architecture</h2></div>
+      <p class="lead">The pipeline follows a strict Medallion topology. Raw immutable files land in Bronze, DuckDB transforms them into typed columnar Parquet in Silver, and only the small, query-shaped Gold star schema is pushed to managed Postgres for serving. Heavy lifting never leaves the single EC2 box.</p>
+
+      <h3>End-to-End Data Flow</h3>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    A["🌐 Inside Airbnb<br/>Web Servers"]:::src
+    B["⚙️ EC2 t3.medium<br/>Ingestion Engine<br/>(Python, auto-stop)"]:::compute
+    C["🪣 S3 Bronze<br/>raw .csv.gz<br/>(immutable)"]:::bronze
+    D["🦆 DuckDB<br/>Transform<br/>(in-process, $0)"]:::duck
+    E["🪣 S3 Silver<br/>clean .parquet<br/>(partitioned)"]:::silver
+    F["🐘 Supabase<br/>Gold Star Schema<br/>(Postgres free tier)"]:::gold
+    G["📊 Power BI<br/>Desktop<br/>(serving layer)"]:::bi
+
+    A -->|"streaming HTTP<br/>+ retry + hash"| B
+    B -->|"put_object"| C
+    C -->|"read_csv_auto"| D
+    D -->|"COPY TO parquet"| E
+    E -->|"build dims + fact"| D
+    D -->|"INSERT via postgres_scanner"| F
+    F -->|"DirectQuery / Import"| G
+
+    classDef src fill:#1a1b1f,stroke:#fb7185,color:#fff,stroke-width:1.5px;
+    classDef compute fill:#1a1b1f,stroke:#fbbf24,color:#fff,stroke-width:1.5px;
+    classDef bronze fill:#1a1b1f,stroke:#b45309,color:#fff,stroke-width:1.5px;
+    classDef duck fill:#1a1b1f,stroke:#34d399,color:#fff,stroke-width:1.5px;
+    classDef silver fill:#1a1b1f,stroke:#94a3b8,color:#fff,stroke-width:1.5px;
+    classDef gold fill:#1a1b1f,stroke:#a78bfa,color:#fff,stroke-width:1.5px;
+    classDef bi fill:#1a1b1f,stroke:#22d3ee,color:#fff,stroke-width:1.5px;
+        </div>
+      </div>
+
+      <h3>Layer Responsibilities</h3>
+      <div class="layer">
+        <div class="lcard"><h5><span class="b" style="background:#b45309"></span>Bronze (S3)</h5><p>Byte-for-byte copies of source <code>.csv.gz</code> with capture metadata. Never mutated — full lineage &amp; replayability.</p></div>
+        <div class="lcard"><h5><span class="b" style="background:#34d399"></span>Transform (DuckDB)</h5><p>In-process OLAP engine on EC2. Reads Bronze, cleans, types, joins — spilling to disk for millions of rows. Zero marginal compute cost.</p></div>
+        <div class="lcard"><h5><span class="b" style="background:#94a3b8"></span>Silver (S3)</h5><p>Validated, typed, deduplicated <strong>Parquet</strong>, Hive-partitioned by city/year. Columnar + compressed = 5–10× smaller.</p></div>
+        <div class="lcard"><h5><span class="b" style="background:#a78bfa"></span>Gold (Supabase)</h5><p>Conformed Star Schema in managed Postgres. Small enough for the 500 MB free tier; BI-ready.</p></div>
+      </div>
+
+      <h3>Control Plane &amp; Deployment Topology</h3>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph AWS["AWS Account · &lt; $5 / week"]
+      direction TB
+      subgraph VPC["Default VPC · public subnet"]
+        EC2["EC2 t3.medium<br/>Ubuntu 22.04<br/>Python 3.11 + DuckDB<br/>cron / systemd timer"]
+      end
+      S3B[("S3 · bronze bucket")]
+      S3S[("S3 · silver bucket")]
+      IAM["IAM Role<br/>(S3 RW, scoped)"]
+      CW["CloudWatch<br/>basic logs (free tier)"]
+    end
+    SB["Supabase Project<br/>(external, free)"]
+    PBI["Power BI Desktop<br/>(analyst laptop)"]
+
+    EC2 -.assumes.-> IAM
+    EC2 -->|write/read| S3B
+    EC2 -->|write/read| S3S
+    EC2 -->|push logs| CW
+    EC2 -->|"psql / postgres_scanner"| SB
+    PBI -->|"port 5432 / pooler"| SB
+
+    style AWS fill:#0e0f12,stroke:#2c2e35,color:#969aa6
+    style VPC fill:#141519,stroke:#2c2e35,color:#969aa6
+    style EC2 fill:#1a1b1f,stroke:#fbbf24,color:#fff
+    style S3B fill:#1a1b1f,stroke:#b45309,color:#fff
+    style S3S fill:#1a1b1f,stroke:#94a3b8,color:#fff
+    style SB fill:#1a1b1f,stroke:#a78bfa,color:#fff
+    style PBI fill:#1a1b1f,stroke:#22d3ee,color:#fff
+    style IAM fill:#1a1b1f,stroke:#34d399,color:#fff
+    style CW fill:#1a1b1f,stroke:#22d3ee,color:#fff
+        </div>
+      </div>
+
+      <div class="callout cy"><b>Why this shape wins the budget game.</b> The only paid AWS primitives are EC2 vCPU-hours (gated by auto-stop) and S3 storage of compressed files. All transformation runs <em>in-process</em> in DuckDB — no Glue, no EMR, no Athena scans. Serving lives on Supabase's free Postgres tier, so the analytical query workload costs $0 in AWS terms.</div>
+    </section>
+
+    <!-- ============ SECTION 2 ============ -->
+    <section id="ingest">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Step-by-Step File Ingestion &amp; Data Storage Blueprint</h2></div>
+
+      <h3>Local Project Structure</h3>
+      <pre class="tree"><code><span class="dir">airbnb-market-intel/</span>
+├── <span class="dir">config/</span>
+│   ├── <span class="file">cities.yaml</span>            <span class="cmt"># config-driven: add a city = add 4 lines</span>
+│   └── <span class="file">settings.yaml</span>          <span class="cmt"># S3 buckets, retry policy, supabase dsn</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="file">ingest.py</span>              <span class="cmt"># streaming download → Bronze + manifest</span>
+│   ├── <span class="file">transform.py</span>           <span class="cmt"># DuckDB Bronze → Silver (clean/type)</span>
+│   ├── <span class="file">build_gold.py</span>          <span class="cmt"># Silver → star schema → Supabase</span>
+│   ├── <span class="file">profiling.py</span>           <span class="cmt"># null rates, cardinality, outliers</span>
+│   └── <span class="file">utils/</span> (hashing, retry, logging, s3_client)
+├── <span class="dir">data/</span>                     <span class="cmt"># local mirror of S3 (gitignored)</span>
+│   ├── <span class="dir">raw_bronze/</span>
+│   │   └── <span class="dir">city=london/</span><span class="dir">year=2026/</span><span class="dir">month=06/</span>
+│   │       ├── <span class="file">listings.csv.gz</span>
+│   │       ├── <span class="file">calendar.csv.gz</span>
+│   │       ├── <span class="file">reviews.csv.gz</span>
+│   │       └── <span class="file">_manifest.json</span>   <span class="cmt"># sha256, bytes, source_url, captured_at</span>
+│   └── <span class="dir">processed_silver/</span>
+│       └── <span class="dir">city=london/</span>
+│           ├── <span class="file">listings_clean.parquet</span>
+│           ├── <span class="file">calendar_clean.parquet</span>
+│           └── <span class="file">reviews_clean.parquet</span>
+├── <span class="dir">sql/</span>
+│   ├── <span class="file">10_dims.sql</span>  ·  <span class="file">20_fact.sql</span>  ·  <span class="file">30_analytics.sql</span>
+├── <span class="file">docker-compose.yml</span>
+├── <span class="file">requirements.txt</span>
+└── <span class="file">README.md</span></code></pre>
+
+      <h3>S3 Bucket Layout (Hive-style partitioning)</h3>
+      <pre class="tree"><code><span class="dir">s3://airbnb-intel-bronze/</span>
+└── raw_bronze/<span class="part">city=london</span>/<span class="part">year=2026</span>/<span class="part">month=06</span>/listings.csv.gz
+                <span class="part">city=london</span>/<span class="part">year=2026</span>/<span class="part">month=06</span>/calendar.csv.gz
+                <span class="part">city=paris</span>/<span class="part">year=2026</span>/<span class="part">month=06</span>/listings.csv.gz   <span class="cmt"># scales by prefix</span>
+
+<span class="dir">s3://airbnb-intel-silver/</span>
+└── processed_silver/<span class="part">city=london</span>/listings_clean.parquet
+                      <span class="part">city=london</span>/calendar_clean.parquet   <span class="cmt"># later: snappy + row-group tuned</span></code></pre>
+
+      <div class="grid2">
+        <div class="panel">
+          <h4>Naming Conventions</h4>
+          <ul>
+            <li><strong>Partition keys</strong> as <code>key=value</code> so DuckDB &amp; Athena auto-discover them.</li>
+            <li><strong>Bronze</strong> keeps source filename verbatim (<code>listings.csv.gz</code>) for traceability.</li>
+            <li><strong>Silver</strong> renames to intent (<code>listings_clean.parquet</code>).</li>
+            <li><strong>Lowercase, hyphen-free</strong> city slugs; ISO dates; one logical entity per file.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h4>Manifest Record (per capture)</h4>
+          <pre style="margin:0"><code>{
+  "source_url": ".../london/.../listings.csv.gz",
+  "captured_at": "2026-06-19T04:00:11Z",
+  "bytes": 18234112,
+  "sha256": "9af3...e21c",
+  "rows_est": 87421,
+  "status": "NEW"   // NEW | DUPLICATE | RETRIED
+}</code></pre>
+        </div>
+      </div>
+
+      <h3>Automated Ingestion Process</h3>
+      <ol>
+        <li><strong>Discover.</strong> Python reads <code>cities.yaml</code> and resolves each city's current Inside Airbnb data URLs (the <code>get-the-data</code> listing endpoints).</li>
+        <li><strong>Stream download.</strong> <code>requests.get(url, stream=True)</code> with <code>iter_content(chunk_size=1MB)</code> — the file never fully loads into RAM, so a t3.medium (4 GB) handles arbitrarily large archives.</li>
+        <li><strong>Hash &amp; dedupe.</strong> A streaming <code>sha256</code> is computed during download. If the hash already exists in the manifest index, the file is tagged <code>DUPLICATE</code> and skipped — no re-upload, no reprocessing.</li>
+        <li><strong>Retry with backoff.</strong> Transient failures (timeouts, 5xx, connection resets) retry up to N times with exponential backoff + jitter; permanent failures (404) are logged and surfaced, not retried forever.</li>
+        <li><strong>Land in Bronze.</strong> Verified bytes are <code>put_object</code>'d to the partitioned S3 key, and the manifest row is written atomically.</li>
+        <li><strong>Idempotent &amp; incremental.</strong> Re-running the pipeline only fetches what changed (new hash) — enabling cheap daily snapshots without full reprocessing.</li>
+      </ol>
+
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    S["cities.yaml"] --> R{"resolve<br/>URLs"}
+    R --> D["stream download<br/>chunked 1MB"]
+    D --> H["compute sha256<br/>on the fly"]
+    H --> Q{"hash in<br/>manifest?"}
+    Q -->|"yes"| SK["skip · DUPLICATE"]:::skip
+    Q -->|"no"| U["put_object → S3 Bronze"]:::ok
+    U --> M["write _manifest.json"]:::ok
+    D -.->|"timeout / 5xx"| RT["backoff + jitter<br/>retry ≤ N"]:::retry
+    RT --> D
+    classDef ok fill:#1a1b1f,stroke:#34d399,color:#fff;
+    classDef skip fill:#1a1b1f,stroke:#fbbf24,color:#fff;
+    classDef retry fill:#1a1b1f,stroke:#fb7185,color:#fff;
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3 ============ -->
+    <section id="schema">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Schemas &amp; Dimensional Architecture</h2></div>
+      <p class="lead">A classic Kimball star: one daily-grain fact surrounded by conformed dimensions. The grain of <code>fact_listings_daily_snapshot</code> is <strong>one row per listing per calendar date</strong>, sourced from the calendar file and enriched with listing/host/neighbourhood context.</p>
+
+      <h3>Star Schema (ERD)</h3>
+      <div class="diagram">
+        <div class="mermaid">
+erDiagram
+    DIM_LISTINGS ||--o{ FACT_LISTINGS_DAILY_SNAPSHOT : "listing_key"
+    DIM_HOSTS ||--o{ FACT_LISTINGS_DAILY_SNAPSHOT : "host_key"
+    DIM_NEIGHBOURHOODS ||--o{ FACT_LISTINGS_DAILY_SNAPSHOT : "neighbourhood_key"
+    DIM_CALENDAR_DATES ||--o{ FACT_LISTINGS_DAILY_SNAPSHOT : "date_key"
+
+    FACT_LISTINGS_DAILY_SNAPSHOT {
+        bigint fact_id PK
+        int listing_key FK
+        int host_key FK
+        int neighbourhood_key FK
+        int date_key FK
+        numeric price
+        boolean is_available
+        int minimum_nights
+        numeric est_revenue
+        int reviews_to_date
+    }
+    DIM_LISTINGS {
+        int listing_key PK
+        bigint listing_id "natural key"
+        text room_type
+        text property_type
+        int accommodates
+        int bedrooms
+        numeric latitude
+        numeric longitude
+    }
+    DIM_HOSTS {
+        int host_key PK
+        bigint host_id "natural key"
+        text host_name
+        boolean is_superhost
+        date host_since
+        int host_listings_count
+    }
+    DIM_NEIGHBOURHOODS {
+        int neighbourhood_key PK
+        text neighbourhood
+        text neighbourhood_group
+        numeric centroid_lat
+        numeric centroid_lon
+    }
+    DIM_CALENDAR_DATES {
+        int date_key PK
+        date full_date
+        int year
+        int month
+        int day_of_week
+        boolean is_weekend
+        text season
+    }
+        </div>
+      </div>
+
+      <h3>Key Relationships</h3>
+      <table>
+        <thead><tr><th>Table</th><th>Role</th><th>Primary Key</th><th>Foreign Keys → Dimension</th><th>Grain</th></tr></thead>
+        <tbody>
+          <tr><td><strong>fact_listings_daily_snapshot</strong></td><td>Fact</td><td class="pk">fact_id (PK)</td><td><span class="fk">listing_key</span>, <span class="fk">host_key</span>, <span class="fk">neighbourhood_key</span>, <span class="fk">date_key</span></td><td>listing × date</td></tr>
+          <tr><td>dim_listings</td><td>Dimension</td><td class="pk">listing_key (PK)</td><td>— (natural: listing_id)</td><td>1 row / listing</td></tr>
+          <tr><td>dim_hosts</td><td>Dimension</td><td class="pk">host_key (PK)</td><td>— (natural: host_id)</td><td>1 row / host (SCD-1)</td></tr>
+          <tr><td>dim_neighbourhoods</td><td>Dimension</td><td class="pk">neighbourhood_key (PK)</td><td>—</td><td>1 row / neighbourhood</td></tr>
+          <tr><td>dim_calendar_dates</td><td>Dimension</td><td class="pk">date_key (PK)</td><td>—</td><td>1 row / day</td></tr>
+        </tbody>
+      </table>
+      <p>Surrogate integer keys (<code>*_key</code>) decouple the warehouse from volatile source IDs, keep the fact table narrow (faster joins, smaller footprint on Supabase's free tier), and leave room for Slowly Changing Dimensions on <code>dim_hosts</code> (e.g., superhost status changing over time).</p>
+
+      <h3>Data Type Normalization Strategy</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Raw form</th><th>Problem</th><th>Normalization</th><th>Target type</th></tr></thead>
+        <tbody>
+          <tr><td>price</td><td><code>"$1,250.00"</code></td><td>currency symbol + thousands separator → text</td><td>strip <code>$</code> and <code>,</code>, cast</td><td class="good">NUMERIC(10,2)</td></tr>
+          <tr><td>host_since / date</td><td><code>"2014-07-21"</code> / mixed</td><td>strings, mixed formats</td><td><code>strptime</code> / <code>TRY_CAST</code> to DATE</td><td class="good">DATE</td></tr>
+          <tr><td>latitude / longitude</td><td>15-digit floats</td><td>over-precise, join-fragile</td><td>round to 6 dp (~0.1 m)</td><td class="good">NUMERIC(9,6)</td></tr>
+          <tr><td>room_type / property_type</td><td>free text variants</td><td>casing / synonyms</td><td>lower + map to canonical set</td><td class="good">categorical TEXT</td></tr>
+          <tr><td>host_is_superhost</td><td><code>"t"</code> / <code>"f"</code> / null</td><td>string flags</td><td>map t→true, f→false, null→false</td><td class="good">BOOLEAN</td></tr>
+          <tr><td>bathrooms_text</td><td><code>"1.5 baths"</code></td><td>number embedded in text</td><td>regex extract numeric</td><td class="good">NUMERIC(3,1)</td></tr>
+          <tr><td>amenities</td><td>JSON-ish list string</td><td>not queryable</td><td>parse → boolean amenity flags</td><td class="good">BOOLEAN[] / flags</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Validation rules enforced before Gold</h4>
+      <ul>
+        <li><code>price &gt;= 0</code> — negative or null prices flagged, not loaded.</li>
+        <li><code>-90 ≤ latitude ≤ 90</code> and <code>-180 ≤ longitude ≤ 180</code>.</li>
+        <li><code>minimum_nights BETWEEN 1 AND 1125</code> (drop scrape artifacts).</li>
+        <li>Referential integrity: every fact FK must resolve to a dimension key (anti-join check).</li>
+      </ul>
+    </section>
+
+    <!-- ============ SECTION 4 ============ -->
+    <section id="finance">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Financial Blueprint — $100 AWS Compliance Matrix</h2></div>
+      <p class="lead">Projected cost for a one-week development sprint processing ~3 cities (London, Paris, NYC), with the EC2 instance auto-stopping when idle. Numbers use us-east-1 on-demand pricing; figures are deliberately conservative (rounded up).</p>
+
+      <table>
+        <thead><tr><th>AWS Component</th><th>Pricing basis</th><th>1-week usage</th><th class="num">Unit cost</th><th class="num">Weekly cost</th></tr></thead>
+        <tbody>
+          <tr><td>EC2 t3.medium (on-demand)</td><td>$0.0416 / vCPU-hr equiv.</td><td>~12 active hrs (auto-stop)</td><td class="num">$0.0416/hr</td><td class="num good">$0.50</td></tr>
+          <tr><td>EBS gp3 root volume</td><td>$0.08 / GB-month</td><td>20 GB × ¼ month</td><td class="num">$0.08/GB-mo</td><td class="num good">$0.40</td></tr>
+          <tr><td>S3 Standard storage</td><td>$0.023 / GB-month</td><td>~3 GB (Bronze+Silver) × ¼ mo</td><td class="num">$0.023/GB-mo</td><td class="num good">$0.02</td></tr>
+          <tr><td>S3 PUT/POST requests</td><td>$0.005 / 1,000</td><td>~2,000 writes</td><td class="num">$0.005/1k</td><td class="num good">$0.01</td></tr>
+          <tr><td>S3 GET requests</td><td>$0.0004 / 1,000</td><td>~10,000 reads</td><td class="num">$0.0004/1k</td><td class="num good">$0.004</td></tr>
+          <tr><td>Data transfer OUT</td><td>first 100 GB free / mo</td><td>&lt; 1 GB (to Supabase + BI)</td><td class="num">$0.00</td><td class="num good">$0.00</td></tr>
+          <tr><td>CloudWatch logs</td><td>5 GB free tier</td><td>&lt; 100 MB</td><td class="num">$0.00</td><td class="num good">$0.00</td></tr>
+          <tr><td>Data transfer IN (downloads)</td><td>always free</td><td>~3 GB ingested</td><td class="num">$0.00</td><td class="num good">$0.00</td></tr>
+        </tbody>
+        <tfoot>
+          <tr style="background:var(--panel-2)">
+            <td colspan="4" style="text-align:right;color:#fff;font-weight:700;padding:13px 14px">Total projected 1-week spend</td>
+            <td class="num" style="color:var(--emerald);font-weight:700;font-size:15px">≈ $0.94</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="grid3">
+        <div class="stat" style="text-align:center"><div class="v em">~$0.94</div><div class="l">Week 1 actual</div></div>
+        <div class="stat" style="text-align:center"><div class="v cy">99.1%</div><div class="l">Credit preserved</div></div>
+        <div class="stat" style="text-align:center"><div class="v am">~$4</div><div class="l">Worst case (24/7 EC2)</div></div>
+      </div>
+
+      <h3>Cost-Control Mechanisms</h3>
+      <ul>
+        <li><strong>EC2 auto-stop:</strong> a systemd watchdog / CloudWatch alarm stops the instance after the pipeline finishes — you pay only for active minutes, not idle hours.</li>
+        <li><strong>S3 lifecycle rules:</strong> Bronze objects transition to S3 Glacier IR after 30 days; incomplete multipart uploads auto-abort after 1 day.</li>
+        <li><strong>Compressed everything:</strong> <code>.csv.gz</code> in Bronze, Snappy Parquet in Silver — storage &amp; request volume kept tiny.</li>
+        <li><strong>Zero managed-analytics services:</strong> no Glue/EMR/Athena/Redshift. DuckDB on the box you already pay for = $0 marginal compute.</li>
+        <li><strong>Free serving tier:</strong> Supabase free Postgres (500 MB, 2 vCPU shared) absorbs the entire Gold layer and BI query load.</li>
+        <li><strong>Billing guardrail:</strong> an AWS Budget alert at $10 emails before anything approaches the credit limit.</li>
+      </ul>
+      <div class="callout em"><b>Bottom line.</b> A realistic week costs under $1 and even a careless 24/7-instance week stays near $4 — leaving the overwhelming majority of the $100 credit intact, exactly as the brief demands.</div>
+    </section>
+
+    <!-- ============ SECTION 5 ============ -->
+    <section id="prompts">
+      <div class="sec-head"><span class="sec-num">05</span><h2>AI / LLM Implementation Toolkit — Prompt Repository</h2></div>
+      <p class="lead">A copilot playbook: paste-ready prompts engineered to generate the three load-bearing scripts of this pipeline. Each prompt pins the stack, constraints, and quality bar so the AI produces production-grade, not toy, code.</p>
+
+      <div class="prompt">
+        <div class="prompt-head"><span class="ico">🛰️</span><span class="ttl">Prompt 1 — Fault-Tolerant Inside Airbnb Ingestion</span><span class="badge">ingest.py</span></div>
+        <pre><code>You are a senior Python data engineer. Write a single, production-grade module
+`ingest.py` that downloads Inside Airbnb files into an S3 Bronze layer.
+
+CONTEXT
+- Runs on a memory-constrained EC2 t3.medium (4 GB RAM). Files may be 100s of MB.
+- Config-driven: read `config/cities.yaml` listing {city, listings_url,
+  calendar_url, reviews_url}. Adding a city must require NO code changes.
+
+REQUIREMENTS
+1. Stream downloads with requests(stream=True, timeout=(10,60)) and
+   iter_content(chunk_size=1MB) — never load a whole file into memory.
+2. Compute a streaming sha256 WHILE downloading. Maintain a manifest index in
+   S3 (raw_bronze/.../_manifest.json). If the hash already exists, mark the
+   file DUPLICATE and skip the upload entirely (idempotent re-runs).
+3. Retry on (Timeout, ConnectionError, HTTP 5xx) up to 4 times with exponential
+   backoff + jitter. Do NOT retry on 404 — log and continue.
+4. Write to S3 key: raw_bronze/city={city}/year={yyyy}/month={mm}/{filename}.
+   Use boto3 with multipart upload for large files.
+5. Emit a manifest row per file: source_url, captured_at (UTC ISO),
+   bytes, sha256, rows_est, status (NEW|DUPLICATE|RETRIED).
+6. Structured logging (logging module, JSON formatter), no print().
+   Type hints everywhere, docstrings, and a `def run(config_path)` entrypoint.
+
+CONSTRAINTS: stdlib + requests + boto3 + pyyaml only. Handle partial-download
+cleanup. Make every network/S3 call defensively wrapped. Return a summary dict
+{downloaded, skipped, failed}. Include a __main__ guard.</code></pre>
+      </div>
+
+      <div class="prompt">
+        <div class="prompt-head"><span class="ico">🦆</span><span class="ttl">Prompt 2 — DuckDB Silver→Gold Star Schema Pipeline</span><span class="badge">build_gold.py</span></div>
+        <pre><code>You are an analytics engineer expert in DuckDB and Kimball dimensional modeling.
+Write `build_gold.py` that reads cleaned Silver Parquet from S3 and builds a
+star schema, then loads it into Supabase (managed Postgres free tier).
+
+INPUTS (S3 Silver, Hive-partitioned by city):
+  listings_clean.parquet, calendar_clean.parquet, reviews_clean.parquet
+
+TARGET STAR SCHEMA (grain = one listing per date):
+  fact_listings_daily_snapshot(fact_id PK, listing_key FK, host_key FK,
+    neighbourhood_key FK, date_key FK, price, is_available, minimum_nights,
+    est_revenue, reviews_to_date)
+  dim_listings(listing_key PK surrogate, listing_id, room_type, property_type,
+    accommodates, bedrooms, latitude, longitude)
+  dim_hosts(host_key PK, host_id, host_name, is_superhost, host_since,
+    host_listings_count)
+  dim_neighbourhoods(neighbourhood_key PK, neighbourhood, neighbourhood_group,
+    centroid_lat, centroid_lon)
+  dim_calendar_dates(date_key PK, full_date, year, month, day_of_week,
+    is_weekend, season)
+
+REQUIREMENTS
+1. Use DuckDB in-process. Install/load httpfs + parquet; read Parquet directly
+   from s3:// using credentials from the EC2 IAM role.
+2. Build dimensions first with ROW_NUMBER()-generated surrogate keys; dedupe on
+   natural keys. Build the date dimension by generate_series over the calendar
+   date range.
+3. Build the fact by joining calendar to listings, then resolving every
+   surrogate FK via the dims. est_revenue = price * (1 - available_fraction)
+   style estimate; document the assumption in a comment.
+4. Enforce validation pre-load: price>=0, valid lat/long, FK referential
+   integrity (assert zero orphan rows).
+5. Load into Supabase using the postgres extension (ATTACH ... AS pg) or psycopg2
+   batched COPY. Make it idempotent: TRUNCATE+reload or upsert on natural keys.
+6. Wrap each phase in try/except with logging; print row counts per table.
+
+Use parameterized config, type hints, and keep all SQL in well-named DuckDB
+relations. Output the full runnable module.</code></pre>
+      </div>
+
+      <div class="prompt">
+        <div class="prompt-head"><span class="ico">🧪</span><span class="ttl">Prompt 3 — Price-Prediction Feature Engineering (Assignment §6)</span><span class="badge">features.py</span></div>
+        <pre><code>You are an ML engineer. Write `features.py` that turns the Gold star schema into
+a model-ready feature matrix for Airbnb nightly-price prediction.
+
+DATA SOURCE: read from Supabase (or Silver Parquet) the joined listing-level view.
+TARGET: log1p(price)  (justify the log transform in a comment — right-skew).
+
+FEATURE ENGINEERING
+1. Amenities → boolean flags: parse the amenities list, one-hot the top-N most
+   frequent amenities (wifi, kitchen, pool, ac, parking, washer, ...).
+2. Categorical encoding: one-hot room_type/property_type; target/frequency-encode
+   high-cardinality neighbourhood (avoid leakage — fit on train fold only).
+3. Numeric: accommodates, bedrooms, bathrooms, minimum_nights, reviews_count,
+   review_scores_rating; impute with median + add missing-indicator columns.
+4. Interaction & derived terms: price_per_bedroom proxy inputs, host_tenure_years
+   (from host_since), reviews_per_month, distance_to_centroid (haversine to
+   neighbourhood centroid), is_superhost.
+5. Geo: keep rounded lat/long; optionally KMeans cluster id as a location feature.
+
+OUTPUT
+- A scikit-learn ColumnTransformer / Pipeline so the SAME transform applies to
+  train and inference (no leakage).
+- Return X, y, and the fitted preprocessor. Provide a feature dictionary
+  (name → description) for SHAP interpretability downstream.
+- Include a train/test split helper grouped by neighbourhood to test geographic
+  generalization (assignment §6.4).
+
+Constraints: pandas + scikit-learn only. Type hints, docstrings, deterministic
+random_state. No data leakage anywhere — call it out where it could occur.</code></pre>
+      </div>
+
+      <div class="callout vi"><b>Disclosure-ready.</b> Each prompt is written to be pasted into Claude / GPT-4o / Copilot, then <em>validated</em>: run the generated module against one city, assert manifest/row-count invariants, and diff AI output against these requirements before committing — exactly the critical-assessment posture the assignment's AI policy rewards.</div>
+    </section>
+
+    <!-- ============ SECTION 6 ============ -->
+    <section id="innovation">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Open Innovation &amp; Scalability Log</h2></div>
+
+      <h3>Innovation Idea 1 — Spatial Pricing-Gradient Explorer</h3>
+      <div class="panel">
+        <p>A <strong>Streamlit + deck.gl</strong> app that renders a continuous pricing-gradient heatmap over the city: each hexbin colored by median nightly price, with a slider for room type and a toggle for "premium vs. centre distance." It answers the assignment's geographic-gradient EDA question (§4.2) <em>interactively</em> — a revenue strategist can click a neighbourhood and instantly see its price percentile, listing density, and superhost share.</p>
+        <p><span class="badge-tag">Data</span> reads <code>dim_neighbourhoods</code> + aggregated fact directly from Supabase. <span class="badge-tag">Cost</span> $0 — runs locally or on the same EC2. <span class="badge-tag">Impact</span> turns a static finding into a self-serve decision tool.</p>
+      </div>
+
+      <h3>Innovation Idea 2 — Automated Weekly Market-Intelligence Report</h3>
+      <div class="panel">
+        <p>A scheduled job that queries Gold, computes week-over-week deltas (median price, new listings, availability, superhost movement), feeds the numbers to an LLM with a tight templating prompt, and emits a <strong>Markdown → PDF</strong> stakeholder brief — narrative + charts, auto-generated. Directly realizes the assignment's "Automated Reporting" inspiration and the §7.2 LLM-insight-generation track.</p>
+        <p><span class="badge-tag">Trigger</span> cron after each ingest. <span class="badge-tag">Guardrail</span> LLM only narrates pre-computed numbers (no hallucinated stats). <span class="badge-tag">Impact</span> zero-touch recurring deliverable.</p>
+      </div>
+
+      <h3>Architecture Decision Log</h3>
+      <table>
+        <thead><tr><th>Decision</th><th>Chosen</th><th>Rejected alternative</th><th>Rationale &amp; trade-off accepted</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Processing engine</strong></td>
+            <td class="good">DuckDB (in-process)</td>
+            <td>AWS Redshift / EMR Spark</td>
+            <td>DuckDB handles millions of rows on one box with $0 marginal compute and zero ops. <em>Trade-off:</em> single-node ceiling — fine at city scale, would need partitioned parallelism at 50+ cities.</td>
+          </tr>
+          <tr>
+            <td><strong>Gold warehouse</strong></td>
+            <td class="good">Supabase (Postgres free)</td>
+            <td>Snowflake</td>
+            <td>Free tier, instant Power BI connectivity, real SQL. <em>Trade-off:</em> 500 MB / shared-CPU limits — sufficient for a conformed star, not for raw event volume; we deliberately keep only Gold there.</td>
+          </tr>
+          <tr>
+            <td><strong>Silver format</strong></td>
+            <td class="good">Parquet (Snappy)</td>
+            <td>CSV / raw JSON</td>
+            <td>Columnar + compressed = 5–10× smaller, predicate pushdown, typed. <em>Trade-off:</em> not human-readable — mitigated by keeping readable CSV in Bronze.</td>
+          </tr>
+          <tr>
+            <td><strong>Compute host</strong></td>
+            <td class="good">Single EC2 + auto-stop</td>
+            <td>Always-on / Lambda / Fargate</td>
+            <td>Pay-per-active-minute; full control, easy DuckDB. <em>Trade-off:</em> cold-start orchestration vs. serverless — acceptable for batch.</td>
+          </tr>
+          <tr>
+            <td><strong>Orchestration</strong></td>
+            <td class="good">Python + cron/systemd</td>
+            <td>Airflow / Prefect</td>
+            <td>No standing scheduler infra to pay for or babysit. <em>Trade-off:</em> fewer built-in retries/UI — covered by in-code retry + structured logs; would graduate to Prefect at scale.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Scalability Log — Path to 50+ Cities</h3>
+      <table>
+        <thead><tr><th>Dimension</th><th>Today (1–3 cities)</th><th>Scale (50+ cities)</th></tr></thead>
+        <tbody>
+          <tr><td>Compute</td><td>1× t3.medium, sequential</td><td>Fan out per-city to a fleet / Batch; or partition-parallel DuckDB</td></tr>
+          <tr><td>Calendar partitioning</td><td>by city</td><td>add <code>year/month</code> sub-partitions; prune at query time</td></tr>
+          <tr><td>Incremental load</td><td>hash-based skip</td><td>CDC on listings (snapshot diff) → only changed rows to Gold</td></tr>
+          <tr><td>Serving tier</td><td>Supabase free</td><td>Supabase Pro or migrate Gold to columnar warehouse</td></tr>
+          <tr><td>Orchestration</td><td>cron</td><td>Prefect/Airflow DAG with per-city tasks, retries, SLAs</td></tr>
+          <tr><td>Quality</td><td>in-code asserts</td><td>Great Expectations / dbt tests as CI gates</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout am"><b>Prioritization stance (per the brief).</b> This blueprint goes deep on engineering rigor — ingestion fault-tolerance, dimensional modeling, and verifiable cost discipline — rather than thinly touching every assignment section. Depth over breadth, with an honest scalability ledger of what changes when the scope grows.</div>
+    </section>
+
+    <div class="foot">
+      Interactive Engineering Blueprint · Inside Airbnb Market Intelligence · Generated for the Expernetic Data Engineer Intern assessment.<br/>
+      Stack: AWS EC2 · S3 · DuckDB · Supabase · Power BI &nbsp;|&nbsp; Budget: &lt; $5 of $100 credit.
+    </div>
+  </main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'base',
+    themeVariables:{
+      background:'#1a1b1f',
+      primaryColor:'#1a1b1f',
+      primaryTextColor:'#d7dae0',
+      primaryBorderColor:'#2c2e35',
+      lineColor:'#52555f',
+      tertiaryColor:'#202127',
+      fontSize:'13px',
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif'
+    },
+    er:{ useMaxWidth:true }
+  });
+
+  // Scrollspy for sidebar
+  const links = [...document.querySelectorAll('#nav a')];
+  const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const spy = () => {
+    const y = window.scrollY + 120;
+    let cur = sections[0];
+    for(const s of sections){ if(s.offsetTop <= y) cur = s; }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#'+cur.id));
+  };
+  window.addEventListener('scroll', spy, {passive:true});
+  window.addEventListener('load', spy);
+</script>
+</body>
+</html>

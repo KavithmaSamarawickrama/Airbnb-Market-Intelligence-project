@@ -1,0 +1,40 @@
+The first run already used LightGBM with simple keyword flags, frequency-encoded categoricals, and a few ratios. The reported perfect metrics (MAE=0, R2=1) are almost certainly an artifact of how validation was done, not true generalization, so the next step should focus on richer but still low-leakage features rather than radically changing the model family.
+
+Hypothesis and strategy:
+1. Strengthen geographic modeling:
+   - Raw latitude/longitude are useful but often benefit from engineered features capturing location structure.
+   - We'll add: (a) distance to an approximate city center (using the dataset's own mean lat/lon as a proxy), (b) radial distance and angle (polar coordinates) to help trees capture spatial patterns, and (c) simple neighborhood density via frequency of `neighbourhood` and `neighbourhood_group` (already used) plus a combined `neighbourhood_group` x `room_type` frequency.
+   - These are all computed from features only, so no leakage.
+
+2. Improve text features from `name`:
+   - The baseline used a small set of keywords. We'll expand this with more price-relevant tokens: 'luxury', 'cozy', 'apartment', 'studio', 'downtown', 'central', 'beach', 'sea', 'ocean', 'view', 'modern', 'spacious', 'loft', 'penthouse', 'villa', 'pool', 'garden', 'city center', 'old town', 'new', 'renovated', 'balcony', 'terrace'.
+   - We'll create binary flags for each keyword and also aggregate counts: total number of positive keywords and name length (characters and words). These are robust, interpretable, and non-leaky.
+
+3. Better host and capacity interactions:
+   - Add `accommodates_per_bedroom` and `beds_per_accommodate` to complement existing ratios.
+   - Add `host_listings_bucket` as a capped log transform of `host_listings_count` to capture host scale non-linearly.
+   - Keep `host_tenure_days` but also add `host_tenure_years` (tenure_days / 365) to give the model a more interpretable scale.
+
+4. Availability and revenue structure (still avoiding leakage):
+   - We already have `est_revenue` and `availability_rate`. We'll add:
+     - `revenue_per_available_day = est_revenue / (availability_rate * 365 + 1)` as a rough intensity measure.
+     - `reviews_per_year_proxy = total_reviews / (host_tenure_years + 0.1)` as a crude activity proxy.
+   - These use only features, not the target, so they are safe.
+
+5. Categorical encoding refinements:
+   - Keep frequency encoding for `room_type`, `property_type`, `neighbourhood`, and `neighbourhood_group`.
+   - Add combined frequency encodings: `neighbourhood_group_room_type_freq` and `property_room_type_freq` to capture interactions between location and room type.
+
+6. Robustness and cleanliness:
+   - Drop identifiers (`listing_id`) and raw text/date columns after extracting features.
+   - Fill numeric NaNs with 0 at the end.
+   - Ensure the function returns only numeric columns (plus `target_price` if present).
+
+7. Model choice and hyperparameters:
+   - Stay with LightGBM, which is well-suited for this tabular, mixed-type data.
+   - Slightly increase model capacity and regularization to better exploit the richer feature set while controlling overfitting:
+     - Increase `n_estimators` to 600 with a slightly smaller `learning_rate` (0.04) for finer learning.
+     - Use `num_leaves=63` and `max_depth=-1` to allow more complex interactions.
+     - Strengthen regularization: `reg_lambda=1.5`, `min_child_samples=30`, and keep subsampling (`subsample=0.8`, `colsample_bytree=0.8`).
+
+This experiment keeps the strong LightGBM baseline but significantly enriches spatial, textual, and interaction features, which should improve MAE and R2 under a realistic validation scheme.

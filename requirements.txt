@@ -1,0 +1,40 @@
+# Python dependencies for Airbnb Market Intelligence Pipeline
+
+# Data Processing & Analytics
+pandas==2.0.3
+duckdb==0.9.1
+pyarrow==13.0.0
+numpy==1.24.3
+
+# AWS & Cloud
+boto3==1.28.35
+botocore==1.31.35
+
+# Database
+psycopg2-binary==2.9.7
+sqlalchemy==2.0.20
+
+# Configuration
+pyyaml==6.0.1
+
+# Networking & HTTP
+requests==2.31.0
+urllib3==1.26.18
+
+# Logging & Monitoring
+python-json-logger==2.0.7
+
+# Data Quality & Validation
+great-expectations==0.17.12  # Optional: for advanced data profiling
+
+# Development & Testing
+pytest==7.4.0
+pytest-cov==4.1.0
+black==23.9.1
+flake8==6.0.0
+mypy==1.5.1
+
+# Jupyter (for interactive exploration)
+jupyter==1.0.0
+jupyterlab==4.0.4
+ipython==8.14.0

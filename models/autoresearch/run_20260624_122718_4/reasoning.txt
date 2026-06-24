@@ -1,0 +1,50 @@
+The history shows three LightGBM runs with progressively richer feature engineering proposed, but the current champion is still the very first, relatively simple setup. Metrics are clearly unrealistic (MAE=0, R2=1), suggesting a validation artifact rather than true performance. The best next step is to keep the strong LightGBM family but substantially enrich feature engineering along three axes: (1) spatial structure, (2) text signals from the listing name, and (3) host/usage intensity interactions, while still avoiding any target leakage.
+
+Hypothesis:
+- Prices are strongly driven by location, property quality (often reflected in the title), and host/booking behavior. The champion uses only raw lat/lon, a small keyword set, and simple frequency encodings. Adding structured spatial features (distance to centroid), richer text indicators, and more nuanced host/availability/review ratios should give LightGBM more informative signals and improve MAE/R2 under a correct validation scheme.
+
+Key feature engineering improvements:
+1. Spatial features:
+   - Compute the global centroid (mean latitude/longitude) and add both haversine and Euclidean distance from each listing to this centroid. This captures distance from the main city cluster and helps the model learn spatial price gradients.
+   - Keep raw latitude/longitude as well; trees can still exploit them directly.
+
+2. Text features from `name`:
+   - Expand keyword flags to a richer set of price-relevant descriptors: 'luxury', 'cozy', 'apartment', 'studio', 'downtown', 'central', 'beach', 'sea', 'ocean', 'view', 'modern', 'spacious', 'loft', 'penthouse', 'villa', 'pool', 'garden', 'city center', 'old town', 'new', 'renovated', 'balcony', 'terrace'.
+   - For each keyword, create a binary indicator.
+   - Add aggregate text features: title length in characters, title length in words, and total keyword count. These are non-leaky and often correlate with listing quality and thus price.
+
+3. Host and capacity interactions:
+   - Ratios capturing property layout and capacity:
+     * beds_per_bedroom = beds / bedrooms (safe division).
+     * accommodates_per_bed = accommodates / beds.
+     * accommodates_per_bedroom = accommodates / bedrooms.
+     * beds_per_accommodate = beds / accommodates.
+   - Host behavior and experience:
+     * host_tenure_years = host_tenure_days / 365.
+     * host_listings_log1p = log1p(host_listings_count) to capture diminishing returns of host scale.
+
+4. Availability, revenue, and review intensity (still no target usage):
+   - revenue_per_review = est_revenue / (total_reviews + 1) (already in champion; we keep it).
+   - revenue_per_available_day = est_revenue / (availability_rate * 365 + 1) as a booking intensity proxy.
+   - reviews_per_year_proxy = total_reviews / (host_tenure_years + 0.1) as a crude demand/activity measure.
+
+5. Categorical encoding and interactions:
+   - Continue using frequency encoding for `room_type`, `property_type`, `neighbourhood`, and `neighbourhood_group` (simple, non-leaky, low-dimensional).
+   - Add interaction frequency encodings:
+     * neighbourhood_group_room_type_freq: frequency of each (neighbourhood_group, room_type) pair.
+     * property_room_type_freq: frequency of each (property_type, room_type) pair.
+   - These capture interactions between location/property type and room type without using the target.
+
+6. Robustness:
+   - Drop identifiers (`listing_id`) and raw text/date columns (`name`, `host_since`) after feature extraction.
+   - Ensure the returned DataFrame has only numeric columns (plus `target_price` if present) and fill any remaining NaNs with 0.
+
+Model choice and hyperparameters:
+- Stay with LightGBM, which is well-suited for heterogeneous tabular data and can exploit the richer feature set.
+- Slightly increase capacity and regularization relative to the champion to better model complex interactions while controlling overfitting:
+  - n_estimators=600, learning_rate=0.04 for finer-grained learning.
+  - num_leaves=63, max_depth=-1 to allow more complex trees.
+  - subsample=0.8, colsample_bytree=0.8 for stochastic regularization.
+  - reg_lambda=1.5 and min_child_samples=30 for stronger regularization.
+
+This experiment is a direct, principled extension of the champion: same model family, but with significantly richer spatial, textual, and interaction features. Under a realistic validation setup, it should improve MAE and R2 by giving the model more structured, informative signals about location, property quality, and host behavior.

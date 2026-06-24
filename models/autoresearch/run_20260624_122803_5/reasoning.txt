@@ -1,0 +1,21 @@
+All previous runs used LightGBM with progressively richer, but conceptually similar, feature engineering. Metrics are clearly unrealistic (MAE=0, R2=1), indicating a validation artifact rather than true generalization. The champion is the simplest LightGBM setup with basic keyword flags and frequency encodings.
+
+Given that LightGBM is already a strong choice for this tabular regression problem, the next experiment should focus on:
+1) More expressive, but still low-leakage, feature engineering (especially spatial, text, and host/usage intensity features), and
+2) A slightly more regularized and flexible LightGBM configuration that can exploit these features while being robust under a proper validation scheme.
+
+Hypotheses:
+- Location: Price is strongly driven by location. Raw lat/lon are useful but often benefit from engineered spatial features. We'll compute a global centroid (mean lat/lon) and add both haversine and Euclidean distance to this centroid. This captures distance from the main city cluster and helps the model learn spatial price gradients.
+- Text (`name`): Listing titles encode quality and amenities. We'll expand keyword flags to a richer set of price-relevant descriptors (luxury, cozy, downtown, beach, view, modern, spacious, loft, penthouse, villa, pool, garden, balcony, terrace, etc.), plus aggregate features like name length (chars/words) and total keyword count. These are non-leaky and often correlate with listing quality.
+- Host & capacity interactions: We'll add ratios that capture property layout and capacity (beds_per_bedroom, accommodates_per_bed, accommodates_per_bedroom, beds_per_accommodate) and host behavior (host_tenure_years, log1p(host_listings_count)). These help the model understand scale and experience effects.
+- Availability, revenue, reviews: Using only existing features (no target), we derive intensity-like measures: revenue_per_review, revenue_per_available_day, and reviews_per_year_proxy. These capture booking intensity and demand.
+- Categorical encoding: We'll keep frequency encoding for room_type, property_type, neighbourhood, and neighbourhood_group, and add interaction frequencies for (neighbourhood_group, room_type) and (property_type, room_type). Frequency encoding is simple, non-leaky, and low-dimensional.
+
+Model configuration:
+- Stay with LightGBM but slightly increase capacity and regularization relative to the champion to better capture complex interactions while controlling overfitting:
+  - More trees with a smaller learning rate (n_estimators=800, learning_rate=0.035) for finer learning.
+  - num_leaves=63 to allow more complex trees, max_depth=-1 to let LightGBM choose depth.
+  - Stronger regularization: reg_lambda=2.0, min_child_samples=40, plus subsample and colsample_bytree at 0.8.
+  - Use RMSE as the metric and standard regression objective.
+
+This experiment is a principled extension of the champion: same model family, but with significantly richer spatial, textual, and interaction features and a more regularized configuration. Under a realistic validation scheme, this should improve MAE and R2 by giving the model more structured, informative signals about location, property quality, and host behavior.

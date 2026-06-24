@@ -1,0 +1,79 @@
+# Global Pipeline Settings
+
+# AWS Configuration
+aws:
+  region: "us-east-1"
+  # For local development, use default credentials from ~/.aws/credentials or env vars
+  # For EC2 deployment, use IAM role (no explicit credentials needed)
+  profile: "default" # Set to a profile name if needed; null uses default
+
+# S3 Bucket Configuration
+s3:
+  bronze_bucket: "airbnb-intel-bronze-245758552387"
+  silver_bucket: "airbnb-intel-silver-245758552387"
+  bronze_prefix: "raw_bronze/"
+  silver_prefix: "processed_silver/"
+  # Default ACL: private (no public access)
+  acl: "private"
+  # Enable server-side encryption
+  sse: "AES256"
+
+# Supabase Configuration (PostgreSQL Serving Layer)
+supabase:
+  host: "aws-1-ap-southeast-2.pooler.supabase.com"  # From .env (e.g., "xxxxx.supabase.co")
+  port: 5432
+  database: "postgres"
+  user: "postgres.dbrijqmxmfxyyqrabbln"
+  password: "mkjsdjujhturh"  # From .env
+  pool_size: 5
+  # Tables will be created/replaced during build_gold.py
+
+# Ingestion Configuration
+ingestion:
+  # Streaming chunk size (1 MB)
+  chunk_size_bytes: 1048576
+  # Network timeouts (connection, read)
+  timeout_connect: 10
+  timeout_read: 60
+  # Retry policy
+  max_retries: 4
+  backoff_base: 2  # exponential: 1s, 2s, 4s, 8s
+  # Do NOT retry these HTTP status codes (permanent failures)
+  no_retry_status_codes: [404, 403, 401]
+
+# DuckDB Configuration
+duckdb:
+  # Local in-process DuckDB database file (no server)
+  database_file: "./data/pipeline.duckdb"
+  # Thread pool (0 = auto-detect CPU count)
+  threads: 0
+  # Memory limit (e.g., "4GB" for t3.medium)
+  memory_limit: "4GB"
+
+# Data Quality & Profiling
+quality:
+  # Min rows to consider a dataset valid (avoid empty files)
+  min_rows: 10
+  # Max null fraction per column before warning (0.0 - 1.0)
+  max_null_fraction: 0.5
+  # Numeric outlier detection: stddev multiplier (e.g., 5 = flag beyond 5σ)
+  outlier_stddev_threshold: 5
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  # Format: json (structured) or text (human-readable)
+  format: "json"
+  # Log file directory
+  log_dir: "./logs"
+
+# Execution Flags
+execution:
+  # Skip ingestion if files already exist
+  skip_if_exists: false
+  # Only ingest files from today (if false, ingests all)
+  today_only: false
+  # Dry-run mode: simulate without writing to S3/Supabase
+  dry_run: false
+  # Verbosity
+  verbose: true

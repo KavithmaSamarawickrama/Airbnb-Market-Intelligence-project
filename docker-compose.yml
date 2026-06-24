@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  # DuckDB instance (local file-based, no server needed)
+  # DuckDB is embedded in Python, so no Docker service required
+
+  # PostgreSQL for local development (mimics Supabase)
+  postgres:
+    image: postgres:16-alpine
+    container_name: airbnb-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: airbnb_dev_password
+      POSTGRES_DB: airbnb_gold
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    networks:
+      - airbnb-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # S3-compatible storage (LocalStack for local development)
+  # Uncomment if testing S3 operations locally
+  # localstack:
+  #   image: localstack/localstack:latest
+  #   container_name: airbnb-localstack
+  #   environment:
+  #     SERVICES: s3
+  #     DEBUG: 1
+  #     DATA_DIR: /tmp/localstack/data
+  #     DOCKER_HOST: unix:///var/run/docker.sock
+  #   ports:
+  #     - "4566:4566"
+  #   volumes:
+  #     - "${TMPDIR:-/tmp}:${TMPDIR:-/tmp}"
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - airbnb-net
+
+  # pgAdmin for database exploration (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: airbnb-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@airbnb-local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - airbnb-net
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  airbnb-net:
+    driver: bridge

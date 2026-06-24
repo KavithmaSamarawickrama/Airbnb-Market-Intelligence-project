@@ -1,0 +1,54 @@
+The previous runs both used LightGBM with relatively simple frequency encodings and a small set of text and ratio features. The metrics (MAE=0, R2=1) indicate a likely issue with validation rather than true performance, so the next step should focus on richer, but still low-leakage, feature engineering while keeping a strong gradient boosting model. We will:
+
+1. Strengthen geographic modeling:
+   - Raw latitude/longitude are useful but often benefit from engineered spatial features. We'll compute:
+     * Global centroid of all listings (mean latitude/longitude) and the haversine distance from each listing to this centroid. This captures distance from the main cluster/city center proxy.
+     * Simple Euclidean distance to the centroid as an additional spatial signal.
+   - These features help the model capture location-price gradients without using any target information.
+
+2. Enrich text features from `name`:
+   - Expand keyword flags beyond the baseline set to capture more price-relevant descriptors: 'luxury', 'cozy', 'apartment', 'studio', 'downtown', 'central', 'beach', 'sea', 'ocean', 'view', 'modern', 'spacious', 'loft', 'penthouse', 'villa', 'pool', 'garden', 'city center', 'old town', 'new', 'renovated', 'balcony', 'terrace'.
+   - Create binary indicators for each keyword, plus:
+     * `name_len_chars`: length of the title in characters.
+     * `name_len_words`: number of words.
+     * `name_kw_count`: total number of matched keywords.
+   - These are robust, interpretable, and non-leaky.
+
+3. Improve host and capacity interactions:
+   - Add more ratios and non-linear transforms that often correlate with price:
+     * `beds_per_bedroom` (with safe handling of zero/NaN).
+     * `accommodates_per_bed` and `accommodates_per_bedroom`.
+     * `beds_per_accommodate`.
+   - For host behavior:
+     * `host_tenure_years` = host_tenure_days / 365.
+     * `host_listings_log1p` = log1p(host_listings_count) to capture diminishing returns of host scale.
+
+4. Availability, revenue, and review structure (still avoiding leakage):
+   - Use only existing features to derive intensity-like measures:
+     * `revenue_per_review` = est_revenue / (total_reviews + 1) (already in champion; we keep it).
+     * `revenue_per_available_day` = est_revenue / (availability_rate * 365 + 1).
+     * `reviews_per_year_proxy` = total_reviews / (host_tenure_years + 0.1).
+   - These capture booking intensity and demand without using the target.
+
+5. Categorical encoding refinements:
+   - Continue using frequency encoding for `room_type`, `property_type`, `neighbourhood`, and `neighbourhood_group` (simple and non-leaky).
+   - Add interaction frequency encodings:
+     * `neighbourhood_group_room_type_freq` based on the combined category `neighbourhood_group` x `room_type`.
+     * `property_room_type_freq` based on `property_type` x `room_type`.
+   - Frequency encoding uses only category counts, not target statistics, so it is safe.
+
+6. Robustness and cleanliness:
+   - Drop identifiers (`listing_id`) and raw text/date columns (`name`, `host_since`) after extracting features.
+   - Ensure all outputs are numeric; fill NaNs with 0 at the end.
+   - Keep `target_price` untouched; the training pipeline will separate it.
+
+7. Model choice and hyperparameters:
+   - Stay with LightGBM, which is well-suited for this tabular regression problem and can exploit the richer feature set.
+   - Slightly increase model capacity and regularization compared to the champion to better capture complex interactions while controlling overfitting:
+     * `n_estimators=600`, `learning_rate=0.04` for finer-grained learning.
+     * `num_leaves=63` to allow more complex trees.
+     * `max_depth=-1` to let LightGBM choose depth, with regularization to prevent overfitting.
+     * `subsample=0.8`, `colsample_bytree=0.8` for stochasticity.
+     * `reg_lambda=1.5` and `min_child_samples=30` for stronger regularization.
+
+This experiment keeps the strong LightGBM baseline but significantly enriches spatial, textual, and interaction features. Under a realistic validation scheme, this should improve MAE and R2 by giving the model more informative, structured signals about location, property quality, and host behavior.

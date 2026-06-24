@@ -61,7 +61,9 @@ class GoldLayerBuilder:
                     user=sb["user"],
                     password=sb["password"],
                 )
-                logger.info(f"Connected to Supabase at {sb['host']}")
+                with self.pg_conn.cursor() as cur:
+                    cur.execute("SET statement_timeout = 0;")
+                logger.info(f"Connected to Supabase at {sb['host']} and disabled statement timeout")
             except Exception as e:
                 logger.error(f"Failed to connect to Supabase: {e}")
                 raise
@@ -269,10 +271,10 @@ class GoldLayerBuilder:
                 dh.host_key,
                 dn.neighbourhood_key,
                 dc.date_key,
-                cal.price,
+                COALESCE(cal.price, lst.price) as price,
                 cal.is_available,
                 cal.minimum_nights,
-                COALESCE(cal.price * (CASE WHEN cal.is_available THEN 1.0 ELSE 0.0 END), 0) as est_revenue,
+                COALESCE(COALESCE(cal.price, lst.price) * (CASE WHEN cal.is_available THEN 1.0 ELSE 0.0 END), 0) as est_revenue,
                 COALESCE(lr.review_count, 0) as reviews_to_date
             FROM read_parquet('{calendar_path}') as cal
             LEFT JOIN read_parquet('{listings_path}') as lst
@@ -329,6 +331,7 @@ class GoldLayerBuilder:
                 f"@{self.settings['supabase']['host']}:"
                 f"{self.settings['supabase']['port']}/"
                 f"{self.settings['supabase']['database']}"
+                f"?options=-c%20statement_timeout%3D0"
             )
 
             # Detach if already attached from a previous run or city

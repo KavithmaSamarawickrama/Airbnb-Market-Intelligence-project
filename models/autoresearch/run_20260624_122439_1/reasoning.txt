@@ -1,0 +1,26 @@
+This is the first run, so we should establish a strong but simple baseline using a robust tree-based gradient boosting model and straightforward, low-leakage feature engineering. The dataset is tabular with mixed numeric and categorical variables, and the target is a continuous price, which is well-suited to gradient boosting. LightGBM is a good default due to speed and performance on such data.
+
+Feature engineering strategy:
+1. Drop identifiers and raw text: `listing_id` is an ID and should be dropped. The `name` column is free text; for a first baseline we'll avoid complex NLP and instead extract a few simple, interpretable keyword flags that often correlate with price (e.g., 'luxury', 'cozy', 'apartment', 'studio', 'downtown', 'central', 'beach', 'view'). These are binary indicators and do not risk leakage.
+2. Handle dates and tenure: We already have `host_tenure_days`, which encodes the date information numerically. We'll drop `host_since` to avoid dealing with datetimes directly in this baseline.
+3. Geographic features: We'll keep `latitude` and `longitude` as-is. For a first run we won't compute distances to centroids or city centers yet, to keep things simple.
+4. Categorical encoding: For `room_type`, `property_type`, `neighbourhood`, and `neighbourhood_group`, we'll use frequency encoding (mapping each category to its occurrence frequency in the dataset). This is simple, numeric, and avoids target leakage (it uses only feature distributions, not the target). LightGBM can also handle one-hot, but frequency encoding keeps dimensionality low and is robust for a baseline.
+5. Ratios and interaction-like features: We'll add a few intuitive ratios that often matter for pricing:
+   - `beds_per_bedroom` = beds / bedrooms (with safe handling of zero/NaN)
+   - `accommodates_per_bed` = accommodates / beds
+   - `revenue_per_review` = est_revenue / (total_reviews + 1)
+   - `price_proxy`-like features from availability and revenue: `est_revenue` and `availability_rate` are already present; we won't derive price from them directly to avoid leakage, but the model can learn their relationship.
+6. Missing values: We'll fill numeric NaNs with 0 as a simple baseline strategy. For frequency-encoded categoricals, unseen or NaN categories will map to 0 frequency.
+7. Output: The function will return only numeric columns (plus `target_price` if present). All strings and datetimes will be dropped or transformed.
+
+Model choice and hyperparameters:
+- We'll use LightGBM with moderate complexity: a few hundred trees, shallow to medium depth, and a conservative learning rate. This should give a strong baseline without heavy tuning.
+- Hyperparameters:
+  - `n_estimators=400`: enough trees to learn non-linearities.
+  - `learning_rate=0.05`: conservative step size for stability.
+  - `max_depth=-1` and `num_leaves=31`: standard defaults; LightGBM will control complexity via leaves and regularization.
+  - `subsample=0.8` and `colsample_bytree=0.8`: introduce randomness to reduce overfitting.
+  - `reg_lambda=1.0`: L2 regularization for stability.
+  - `min_child_samples=20`: avoid overly specific leaves.
+
+This experiment establishes a solid baseline with simple, interpretable features and a strong model family. Future iterations can build on this by adding more sophisticated text features, geographic distance features, and tuned hyperparameters.

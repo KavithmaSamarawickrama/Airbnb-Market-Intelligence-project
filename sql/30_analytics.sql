@@ -15,8 +15,8 @@ SELECT
     dl.property_type,
     COUNT(DISTINCT f.listing_key) as active_listings,
     SUM(CASE WHEN f.is_available THEN 1 ELSE 0 END) as available_count,
-    ROUND(AVG(f.price), 2) as avg_price,
-    ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY f.price), 2) as median_price,
+    ROUND(AVG(f.price)::numeric, 2) as avg_price,
+    ROUND((PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY f.price))::numeric, 2) as median_price,
     MIN(f.price) as min_price,
     MAX(f.price) as max_price,
     SUM(f.est_revenue) as total_estimated_revenue,
@@ -40,7 +40,7 @@ SELECT
     dh.host_since,
     dh.host_listings_count,
     COUNT(DISTINCT f.listing_key) as active_listings,
-    ROUND(AVG(f.price), 2) as avg_price,
+    ROUND(AVG(f.price)::numeric, 2) as avg_price,
     SUM(CASE WHEN f.is_available THEN 1 ELSE 0 END) as total_available_days,
     SUM(f.est_revenue) as total_estimated_revenue,
     SUM(f.reviews_to_date) as total_reviews
@@ -57,7 +57,7 @@ SELECT
     dn.neighbourhood_group,
     dc.full_date,
     COUNT(DISTINCT f.listing_key) as listing_count,
-    ROUND(AVG(f.price), 2) as avg_price,
+    ROUND(AVG(f.price)::numeric, 2) as avg_price,
     SUM(CASE WHEN f.is_available THEN 1 ELSE 0 END) as available_count,
     ROUND(100.0 * SUM(CASE WHEN f.is_available THEN 1 ELSE 0 END) / COUNT(DISTINCT f.listing_key), 2) as availability_rate
 FROM fact_listings_daily_snapshot f

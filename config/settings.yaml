@@ -21,7 +21,7 @@ s3:
 # Supabase Configuration (PostgreSQL Serving Layer)
 supabase:
   host: "aws-1-ap-southeast-2.pooler.supabase.com"  # From .env (e.g., "xxxxx.supabase.co")
-  port: 6543
+  port: 5432
   database: "postgres"
   user: "postgres.dbrijqmxmfxyyqrabbln"
   password: "mkjsdjujhturh"  # From .env

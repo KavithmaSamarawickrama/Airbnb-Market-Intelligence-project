@@ -1,0 +1,15 @@
+{
+  "model_type": "LightGBM",
+  "hyperparameters": {
+    "n_estimators": 700,
+    "learning_rate": 0.04,
+    "max_depth": -1,
+    "num_leaves": 48,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_lambda": 2.0,
+    "min_child_samples": 30,
+    "objective": "regression",
+    "metric": "rmse"
+  }
+}
